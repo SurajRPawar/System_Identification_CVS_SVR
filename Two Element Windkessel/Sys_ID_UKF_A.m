@@ -50,11 +50,11 @@ include_us;
     A_deviation =   0;                  % Percentage deviation from true A
     B_deviation =   0;                  % Percentage deviation from true B
     E_deviation =   0;                  % Percentage deviation from true E
-    A0 = 0.01;    
+    A0 = 0.05;    
     
     p0 = diag([100, 25, 1e-1]);      % Initial error covariance
         
-    param_noise_std = 1*[1e-15]; % White noise standard deviation for parameters [A]
+    param_noise_std = 1*[1e-10]; % White noise standard deviation for parameters [A]
     
     % UKF parameters
     alpha = 1e-3;
@@ -124,9 +124,11 @@ include_us;
     theta0 = [A0];
     
 %% UKF 
+    fprintf('Beginning UKF estimation \n'); tic;
     [xhat, yhat, Paug, tselect] = func_TwoElem_SysID_UKF_A(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
                                                                    version, Plv_filtered);
+    fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
 %% Figures
     figure;   
