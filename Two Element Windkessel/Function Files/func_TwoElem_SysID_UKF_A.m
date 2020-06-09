@@ -110,6 +110,7 @@ v4 : Suraj R Pawar, 6-9-2020
 %         title('Qa (mL/s)');
         %}
         
+        % Selection of windows
         for i = 1:steps             
             tr = mod(t(i),tc);
             if tr >= 0 && tr <= dt
@@ -210,9 +211,17 @@ v4 : Suraj R Pawar, 6-9-2020
             num_sigmas = 2*L + 1;
             sigmas = zeros(num_aug_states, num_sigmas, steps_selection);                                                  
             
+            % Frequency of console display
+            console_freq = floor(steps_selection/10);
+            f = waitbar(0,'UKF');
+            
     % UKF   
         for i = 2:steps_selection
-            
+            % Console out
+                if mod(i,console_freq) == 0                    
+                    waitbar((i/steps_selection),f,'UKF');
+                end
+                
             % Reset UKF at beginning of ejection window
                 if reset(i-1) == 1
                     x_aug([1:2],i-1) = x_aug0([1:2]);             
@@ -268,7 +277,8 @@ v4 : Suraj R Pawar, 6-9-2020
             % Update measurements
                 yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, 3, version);                                                                  
         end
- 
+        close(f);
+        
     % Generate Outputs
         xhat = x_aug([1:num_states],:);        
 end
