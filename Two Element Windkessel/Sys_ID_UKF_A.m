@@ -54,7 +54,7 @@ include_us;
     
     p0 = diag([100, 25, 1e-1]);      % Initial error covariance
         
-    param_noise_std = 1*[1e-15]; % White noise standard deviation for parameters [B; Emax]
+    param_noise_std = 1*[1e-15]; % White noise standard deviation for parameters [A]
     
     % UKF parameters
     alpha = 1e-3;
