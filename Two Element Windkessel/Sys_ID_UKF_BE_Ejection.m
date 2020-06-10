@@ -105,6 +105,7 @@ include_us;
     Plv = interp1(t_original, Plv_original, t);
     Pao = interp1(t_original, Ps_original, t);
     Qa = interp1(t_original, Qa_original, t);
+    Qa_filtered = interp1(t_original, Qa_filtered, t);
     Qvad = interp1(t_original, Qvad_original, t);
     Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0    
     y = [Plv; Pao; Qa];    
