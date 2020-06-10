@@ -16,4 +16,6 @@ version 1 : Estimation of B, Emax during isovolumic contraction and
             ejection
 version 2 : Estimation of A during isovolumic expansion + filling stage
 version 3 : Estimation of A, B, Emax during iso contraction + ejection
+ABE version : No numerical version needed. The code uses version 1 and
+            version 2 interchangably
 %}
