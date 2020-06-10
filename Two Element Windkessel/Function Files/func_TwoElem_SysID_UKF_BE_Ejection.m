@@ -69,6 +69,9 @@ v4 : Suraj R Pawar, 6-9-2020
 v5 : Suraj R Pawar, 6-10-2020
     - Added waitbar option
     - Cleaned up comments and description
+v6 : Suraj R Pawar, 6-10-2020
+    - Updated Qa threshold to stop marking ejection.
+    - New Threshold is 0
 %}
     
     %% Argument handling
@@ -138,7 +141,7 @@ v5 : Suraj R Pawar, 6-10-2020
                 marking = 1;
             else
                 if Qcheck == 1
-                    if Qafilt(i) > 10
+                    if Qafilt(i) > 0
                         marking = 1;
                     else
                         marking = 0;

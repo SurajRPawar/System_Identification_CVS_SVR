@@ -36,6 +36,8 @@ paramdots  : Dynamics of parameters to be estimated
 ------------------------------- Versions ----------------------------------
 v1 : Suraj R Pawar, 5-28-2020
     - Initialize
+v2 : Suraj R Pawar, 6-10-2020
+    - Clean up comments describing new cases
 %}
     
     num_states = 2; % Number of states in the two element windkessel model (2)
@@ -66,7 +68,7 @@ v1 : Suraj R Pawar, 5-28-2020
                 getparams.E = 0;
                 paramdots = zeros(2,1);
             end
-        case 2             
+        case 2
             % Estimation of A
             getparams.Rsvr = parameters(1);
             getparams.Cs = parameters(2);
@@ -91,7 +93,7 @@ v1 : Suraj R Pawar, 5-28-2020
                 paramdots = zeros(1,1);
             end              
         case 3
-            % Estimation of B and Emax
+            % Estimation of B, Emax and A
             getparams.Rsvr = parameters(1);
             getparams.Cs = parameters(2);
             getparams.Pr = parameters(3);
