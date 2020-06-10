@@ -125,9 +125,10 @@ include_us;
     theta0 = [B0; Emax0];
     
 %% UKF 
+    waitflag = 1;
     [xhat, yhat, Paug, teject] = func_TwoElem_SysID_UKF_BE_Ejection(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
-                                                                   version, Qa_filtered);
+                                                                   version, Qa_filtered, waitflag);
 
 %% Figures
     figure;   

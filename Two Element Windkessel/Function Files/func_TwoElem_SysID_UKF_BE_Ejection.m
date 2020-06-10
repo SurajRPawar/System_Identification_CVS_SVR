@@ -1,6 +1,6 @@
 function [xhat, yhat, p_aug, tselect] = func_TwoElem_SysID_UKF_BE_Ejection(t, y, Qvad, x0, theta0,...
                                                                               p0, q, r, parameters,...
-                                                                              ukf_params, version, Qafilt)        
+                                                                              ukf_params, version, Qafilt, waitflag)        
 % UKF for B and Emax estimation using Two Element Windkessel model
 %{
 ----------------------------- DESCRIPTION ---------------------------------
@@ -42,6 +42,10 @@ ukf_params : [alpha; kappa; beta]
 version    : The version of experiment to run. This verison will change the
              way parameters and their dynamic equations are set. Refer to
              the MATLAB file 'experiment_versions.m'
+Qafildt    : Filtered aortic flow signal, used for selection of filling
+             stage
+waitflag (o) : Wait flag (0 or 1) to display GUI waitbar. 1 = display
+               waitbar
 
 ----------------------------- OUTPUTS -------------------------------------
 xhat    : Estimated states
@@ -62,17 +66,25 @@ v4 : Suraj R Pawar, 6-9-2020
     - Updated comments
     - Removed input 'stage' from function definition because it was not
     being used anywhere
+v5 : Suraj R Pawar, 6-10-2020
+    - Added waitbar option
+    - Cleaned up comments and description
 %}
-
-    % UKF Parameters
+    
+    %% Argument handling
+        if nargin < 13
+            waitflag = 0;   % If no input provided for waitflag, set it to 0
+        end
+        
+    %% UKF Parameters
         alpha = ukf_params(1);   
         kappa = ukf_params(2);
         beta = ukf_params(3);
          
-    % CVS Parameters
+    %% CVS Parameters
         [getparams, ~] = func_handle_parameters(parameters, version);
         
-    % Sweep Qa signal and index estimation windows
+    %% Sweep Qa signal and index estimation windows
         steps = length(t);  % Total number of samples in measurement signals
         Plv = y(1,:);
         Pao = y(2,:);
@@ -163,12 +175,12 @@ v4 : Suraj R Pawar, 6-9-2020
         hold off;
         %}        
           
-    % Re-organize variables
+        % Re-organize variables
         t = tselect;
         Qvad = Qvad_ejection;
         y = [Plv_ejection; Pao_ejection; Qa_ejection];
         
-    % Variables and Initial conditions    
+    %% Variables and Initial conditions    
         % Count everything            
             dt = t(2) - t(1);                           % Time vector : [t0 : dt : tf]
             num_states = length(x0) + length(theta0);   % Number of states and parameters to estimate            
@@ -207,9 +219,21 @@ v4 : Suraj R Pawar, 6-9-2020
             num_sigmas = 2*L + 1;
             sigmas = zeros(num_aug_states, num_sigmas, steps_ejection);                                                  
             
-    % UKF   
+    %% UKF   
+        % Frequency of console display            
+        if waitflag == 1 
+            f = waitbar(0,'UKF'); 
+            console_freq = floor(steps_ejection/10);
+        end
+        
         for i = 2:steps_ejection
-            
+            % Console out
+                if waitflag == 1
+                    if mod(i,console_freq) == 0                    
+                        waitbar((i/steps_ejection),f,'UKF');
+                    end
+                end
+                
             % Reset UKF at beginning of ejection window
                 if reset(i-1) == 1
                     x_aug([1:2],i-1) = x_aug0([1:2]);             
@@ -266,6 +290,10 @@ v4 : Suraj R Pawar, 6-9-2020
                 yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, 2, version);                                                                     
         end
  
-    % Generate Outputs
+        if waitflag == 1
+            close(f);
+        end
+        
+    %% Generate Outputs
         xhat = x_aug([1:num_states],:);        
 end

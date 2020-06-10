@@ -10,16 +10,15 @@ the right stage of the cardiac cycle is as follows :
 1. Perform power spectrum analysis on aortic flow signal.
 2. Choose a cutoff frequency that satisfactorily removes noise.
 3. Apply lowpass filter to aortic flow.
-4. Scan all samples, and start marking the samples when normalized time, i.e
+4. Scan all samples, and start marking ejection samples when normalized time, i.e
    tn = mod(t,tc) is within 0 and dt. This marks the start of the R wave.
    Here tc is the time for one cardiac cycle. 
 5. Keep scanning and marking the samples until aortic flow drops below some
-   threshold value. Stop marking here. 
-6. The samples you have marked correspond to isovolumic contraction and ejection.
-7. Use these sample windows for UKF estimation.
+   threshold value. Stop marking ejection here. The remaining samples are
+   for filling stage.
 
 ------------------------- Assumptions -------------------------------------
-1. We assume that we know Pr, A, SVR, Cao, Rv
+1. We assume that we know Pr, B, Emax, SVR, Cao, Rv
 2. UKF for B and Emax estimation was tested for various values of A
     - Seems to work within 10% accuracy when A is deviated +50% to -10%
 3. SVR can be estimated using the formula
@@ -36,6 +35,10 @@ v2 : 5-28-220, Suraj R Pawar
     their dynamic equations based on the experiment being run
 v3 : Suraj R pawar, 6-9-2020
     - Add 'include_us' file
+v4 : Suraj R Pawar, 6-10-2020
+    - Longer and more complete filling stage included. 
+    - Qa filtered signal used here as well. 
+    - Cleaned up the comments
 %}
 
 close all; clear all; clc;
@@ -43,26 +46,26 @@ include_us;
 
 %% User Inputs
     % Initial Conditions
-    V0_guess = 5;                       % Guess for unstressed blood volume
-    Vlv0 = 10;                         % Initial left ventricle volume (mL)
-    Ps0 = 100;                          % Initial systemic pressure (mmHg)
+    V0_guess = 5;                   % Guess for unstressed blood volume
+    Vlv0 = 40;                      % Initial left ventricle volume (mL)
+    Ps0 = 120;                      % Initial systemic pressure (mmHg)
     
-    A_deviation =   0;                  % Percentage deviation from true A
-    B_deviation =   0;                  % Percentage deviation from true B
-    E_deviation =   0;                  % Percentage deviation from true E
-    A0 = 0.05;    
+    A_deviation = 0;                % Percentage deviation from true A
+    B_deviation = 0;                % Percentage deviation from true B
+    E_deviation = 0;                % Percentage deviation from true E
+    A0 = 0.01;    
     
-    p0 = diag([100, 25, 1e-1]);      % Initial error covariance
+    p0 = diag([500, 100, 1e-1]);    % Initial error covariance
         
-    param_noise_std = 1*[1e-10]; % White noise standard deviation for parameters [A]
+    param_noise_std = 1*[1e-10];    % White noise standard deviation for parameters [A]
     
     % UKF parameters
     alpha = 1e-3;
     kappa = 0;
-    beta = 2;                          % 2 is optimal for Gaussian distributions
+    beta = 2;                       % 2 is optimal for Gaussian distributions
     
     % What is the version of this experiment ? 
-    experiment_versions;               % Contains description of versions
+    experiment_versions;            % Contains description of versions
     version = 2;
         
 %% Measurements and parameters
@@ -84,11 +87,12 @@ include_us;
     parameters = [Rsvr_true; Cs_true; Pr_true; Ra_true; Rm_true; HR_true; t_vc_true; t_c_true;...
                   A_true; B_true; E_true; V0_true]; % To be passed to UKF       
 
-    % Filter Plv - will be used to detect ejection windows
+    % Filter Qa - will be used to detect ejection windows
     dt_original = data.dt;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
-    Plv_original = data.Plv;
-    Plv_filtered = lowpass(Plv_original, 4, Fs);
+    Plv_original = data.Plv;    
+    Qa_original = data.Qa;
+    Qa_filtered = lowpass(Qa_original, 30, Fs);
     
     % Interpolate all measurements to 1ms timing    
     dt = 0.001;
@@ -100,10 +104,10 @@ include_us;
     Qa_original = data.Qa;
     Vbar_original = data.x(1,:) - V0_true;    
     
-    Plv = interp1(t_original, Plv_original, t);
-    Plv_filtered = interp1(t_original, Plv_filtered, t);
+    Plv = interp1(t_original, Plv_original, t);    
     Pao = interp1(t_original, Ps_original, t);
     Qa = interp1(t_original, Qa_original, t);
+    Qa_filtered = interp1(t_original, Qa_filtered, t);
     Qvad = interp1(t_original, Qvad_original, t);
     Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0
     
@@ -125,13 +129,15 @@ include_us;
     
 %% UKF 
     fprintf('Beginning UKF estimation \n'); tic;
+    waitflag = 1;
     [xhat, yhat, Paug, tselect] = func_TwoElem_SysID_UKF_A(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
-                                                                   version, Plv_filtered);
+                                                                   version, Qa_filtered, waitflag);
     fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
 %% Figures
     figure;   
+    ax = [];
     
     subplot(2,2,1); % Vbar
     hold on;
@@ -141,6 +147,7 @@ include_us;
     legend({'Measured','Estimated'},'Orientation','horizontal');
     title('Vbar (mL)');
     xlabel('Time (s)');
+    ax = [ax, gca];
     
     subplot(2,2,2); % Plv
     hold on;
@@ -150,6 +157,7 @@ include_us;
     legend({'Measured','Estimated'},'Orientation','horizontal');
     title('Plv (mmHg)');
     xlabel('Time (s)');
+    ax = [ax, gca];
     
     subplot(2,2,3); % Ps
     hold on;
@@ -159,6 +167,7 @@ include_us;
     legend({'Measured','Estimated'},'Orientation','horizontal');
     title('Pao (mmHg)');
     xlabel('Time (s)');    
+    ax = [ax, gca];
     
     subplot(2,2,4); % A
     hold on;
@@ -168,3 +177,6 @@ include_us;
     legend({'Actual','Estimated'},'Orientation','horizontal');
     title('A (mmHg)');
     xlabel('Time (s)');        
+    ax = [ax, gca];
+    
+    linkaxes(ax,'x');

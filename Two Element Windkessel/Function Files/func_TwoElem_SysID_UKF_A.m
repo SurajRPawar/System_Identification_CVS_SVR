@@ -1,6 +1,6 @@
 function [xhat, yhat, p_aug, tselect] = func_TwoElem_SysID_UKF_A(t, y, Qvad, x0, theta0,...
                                                                               p0, q, r, parameters,...
-                                                                              ukf_params, version, Plvfilt)        
+                                                                              ukf_params, version, Qafilt, waitflag)        
 % UKF for A estimation using Two Element Windkessel model
 %{
 ----------------------------- DESCRIPTION ---------------------------------
@@ -42,6 +42,10 @@ ukf_params : [alpha; kappa; beta]
 version    : The version of experiment to run. This verison will change the
              way parameters and their dynamic equations are set. Refer to
              the MATLAB file 'experiment_versions.m'
+Qafildt    : Filtered aortic flow signal, used for selection of filling
+             stage
+waitflag (o) : Wait flag (0 or 1) to display GUI waitbar. 1 = display
+               waitbar
 
 ----------------------------- OUTPUTS -------------------------------------
 xhat    : Estimated states
@@ -60,27 +64,33 @@ v3 : Suraj R Pawar, 5-28-2020
     based on experiment being run
 v4 : Suraj R Pawar, 6-9-2020
     - Fixed comments
+v5 : Suraj R Pawar, 6-10-2020
+    - Using Qa filtered signal for selection of filling
+    - Option to show or hide waitbar added
 %}
-
-    % UKF Parameters
+    
+    %% Argument handling
+        if nargin < 13
+            waitflag = 0;   % Don't display waitbar if the argument isn't passed in
+        end
+        
+    %% UKF Parameters
         alpha = ukf_params(1);   
         kappa = ukf_params(2);
         beta = ukf_params(3);
          
-    % CVS Parameters
+    %% CVS Parameters
         [getparams, ~] = func_handle_parameters(parameters, version);
         
-    % Sweep Qa signal and index estimation windows
+    %% Sweep Qa signal and index estimation windows
         steps = length(t);  % Total number of samples in measurement signals
         Plv = y(1,:);
         Pao = y(2,:);
         Qa = y(3,:); 
         Pr = getparams.Pr;
-        
-        marking = 0;        % Indicates when marking is in progress   
+                
         tc = getparams.tc;  % Used for calculating normalized time (s)        
-        j = 1;              % To index and store measurements in selected windows
-        rwt = 0;            % R wave trigger flag
+        j = 1;              % To index and store measurements in selected windows        
         Qcheck = 0;         % Should we start looking for Qa to drop below threshold ?        
         dt = t(2) - t(1);   
         
@@ -89,7 +99,7 @@ v4 : Suraj R Pawar, 6-9-2020
         figure;
         plvplot = subplot(2,1,1);
         paoplot = subplot(2,1,2);
-%         qaplot = subplot(3,1,3);
+        qaplot = subplot(3,1,3);
         ax = [];
         
         axes(plvplot);
@@ -104,13 +114,15 @@ v4 : Suraj R Pawar, 6-9-2020
         title('Pao (mmHg)');
         ax = [ax, gca];
         
-%         axes(qaplot);
-%         hold on;
-%         plot(t,y(3,:),'k');
-%         title('Qa (mL/s)');
+        axes(qaplot);
+        hold on;
+        plot(t,y(3,:),'k');
+        title('Qa (mL/s)');
         %}
         
-        % Selection of windows
+        % Selection of windows : This was with Plv based selection of
+        % windows. Discarded this approach
+        %{
         for i = 1:steps             
             tr = mod(t(i),tc);
             if tr >= 0 && tr <= dt
@@ -147,13 +159,50 @@ v4 : Suraj R Pawar, 6-9-2020
                 end
             end                        
         end
+        %}
+        
+        for i = 1:steps 
+            tr = mod(t(i),tc);
+            if tr >= 0 && tr <= dt
+                rwt = 1;                    
+                marking = 0;
+            end
+            
+            if rwt == 1
+                if Qafilt(i) > 500; % After R wave, wait for Qa to rise above 500 mL before setting Qcheck flag
+                    Qcheck = 1;
+                    rwt = 0;
+                end                
+            else
+                if Qcheck == 1
+                    if Qafilt(i) < 0
+                        marking = 1;
+                        Qcheck = 0;
+                        rst = 1;                    
+                    end
+                end
+            end
+            
+            if marking == 1                      
+                % filling window detected  
+                Qa_selection(j) = Qa(i);
+                Plv_selection(j) = Plv(i);
+                Pao_selection(j) = Pao(i);
+                Qvad_selection(j) = Qvad(i);
+                tselect(j) = t(i);      
+                reset(j) = rst;             % 'reset' used to reset x and p for states during UKF
+                j = j + 1;        
+                if rst == 1
+                    rst = 0;
+                end
+            end                        
+        end
         
         % Uncomment for figure (match what was done with figure before loop)
         %{
         axes(plvplot);
         plot(tselect,Plv_selection,'r.');
-        plot(tselect, reset.*80);
-        plot(t, 80*en,'.');
+        plot(tselect, reset.*80);        
         hold off;        
         
         axes(paoplot);
@@ -162,9 +211,9 @@ v4 : Suraj R Pawar, 6-9-2020
         
         linkaxes(ax,'x');
         
-%         axes(qaplot);
-%         plot(tselect,Qa_selection,'r.');
-%         hold off;
+        axes(qaplot);
+        plot(tselect,Qa_selection,'r.');
+        hold off;
         %}            
         
     % Re-organize variables
@@ -172,7 +221,7 @@ v4 : Suraj R Pawar, 6-9-2020
         Qvad = Qvad_selection;        
         y = [Plv_selection; Pao_selection; Qa_selection];
         
-    % Variables and Initial conditions    
+    %% Variables and Initial conditions    
         % Count everything            
             dt = t(2) - t(1);                           % Time vector : [t0 : dt : tf]
             num_states = length(x0) + length(theta0);   % Number of states and parameters to estimate            
@@ -211,18 +260,20 @@ v4 : Suraj R Pawar, 6-9-2020
             num_sigmas = 2*L + 1;
             sigmas = zeros(num_aug_states, num_sigmas, steps_selection);                                                  
             
-            % Frequency of console display
-            console_freq = floor(steps_selection/10);
-            %f = waitbar(0,'UKF');
+            % Frequency of console display            
+            if waitflag == 1 
+                f = waitbar(0,'UKF'); 
+                console_freq = floor(steps_selection/10);
+            end
             
-    % UKF   
+    %% UKF   
         for i = 2:steps_selection
             % Console out
-                %{
-                if mod(i,console_freq) == 0                    
-                    waitbar((i/steps_selection),f,'UKF');
+                if waitflag == 1
+                    if mod(i,console_freq) == 0                    
+                        waitbar((i/steps_selection),f,'UKF');
+                    end
                 end
-                %}
             
             % Reset UKF at beginning of ejection window
                 if reset(i-1) == 1
@@ -279,8 +330,11 @@ v4 : Suraj R Pawar, 6-9-2020
             % Update measurements
                 yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, 3, version);                                                                  
         end
-        %close(f);
         
-    % Generate Outputs
+        if waitflag == 1
+            close(f);
+        end
+        
+    %% Generate Outputs
         xhat = x_aug([1:num_states],:);        
 end
