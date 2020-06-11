@@ -27,9 +27,9 @@ num_beats = data.num_beats;
 tf = tc * num_beats;
 t = [t0 : dt : tf];
 
-Rsvr = data.parameters(2);
-Cs = data.parameters(1);
-Pr = data.parameters(3);
+Rsvr = 1*data.parameters(2);
+Cs = 1*data.parameters(1);
+Pr = 1*data.parameters(3);
 
 Plv = data.Plv;     % (mmHg)
 Ps = data.Ps;       % (mmHg)
@@ -82,11 +82,11 @@ ax = [ax, gca];
 
 axes(Psplot);
 hold on;
-plot(t, Ps, 'k-');
-plot(t, Pshat, 'r--');
+plot(t(1:10:end), Ps(1:10:end), 'k-', 'LineWidth',1);
+plot(t(1:10:end), Pshat(1:10:end),'r--','LineWidth',1);
 hold off;
 ylabel('Pressure (mmHg)'); xlabel('Time (s)');
-legend('Ps meas','Ps hat');
+legend('Ps hat', 'Ps meas');
 ax = [ax, gca];
 
 linkaxes(ax, 'x');
