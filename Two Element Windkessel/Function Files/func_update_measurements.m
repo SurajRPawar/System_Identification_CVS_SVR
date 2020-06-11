@@ -42,12 +42,16 @@ y : Updated measurements [Plv; Ps; Qa]
 --------------------------- VERSION HISTORY -------------------------------
 v1 : Suraj R Pawar, 5-24-2020
      - Initialize
+v2 : Suraj R Pawar, 6-11-2020
+    - Added counts input to func_handle_parameters
+    - Consequently, have to send a blank input of [] when calling the
+    function here.
 %}
 
     % Extract states and parameters
     Vbar = x(1);
     Ps = x(2);
-    [getparams, ~] = func_handle_parameters(parameters, version, [], x);
+    [getparams, ~] = func_handle_parameters(parameters, version, [], [], x);
     A = getparams.A;
     B = getparams.B;
     Emax = getparams.E;

@@ -31,10 +31,13 @@ est_meas     : Estimated measurements
 -------------------------- VERSION HISTORY --------------------------------
 v1 : Suraj R Pawar, 5-24-2020
      - Initialize
+v2 : Suraj R Pawar, 6-11-2020
+    - Send counts input to func_handle_parameters
+    - This function will use counts to determine the number of states
 %}
 
     % Known parameters
-        [getparams, paramdots] = func_handle_parameters(parameters, version, sigmas);
+        [getparams, paramdots] = func_handle_parameters(parameters, version, counts, sigmas);
         Rsvr = getparams.Rsvr;
         Cs = getparams.Cs;
         Pr = getparams.Pr;       

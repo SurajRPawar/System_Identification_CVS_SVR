@@ -30,6 +30,8 @@ all beats.
 -------------------------------- Verisons ---------------------------------
 v1 : 6-10-2020, Suraj R Pawar
     - Initialize
+v2 : Suraj R Pawar, 6-11-2020
+    - Tested after adding 'counts' variable to func_handle_parameters
 %}
 
 close all; clear all; clc;

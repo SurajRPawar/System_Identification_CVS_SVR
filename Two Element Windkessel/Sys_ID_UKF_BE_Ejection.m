@@ -37,6 +37,9 @@ v2 : 5-28-220, Suraj R Pawar
 v3 : 6-9-2020, Suraj R Pawar
     - Added 'include_us.m' to add necessary folders and subfolders to
     MATLAB path
+v4 : Suraj R Pawar, 6-11-2020
+    - Tested after adding 'counts' as an extra input to
+    func_handle_parameters
 %}
 
 close all; clear all; clc;
@@ -48,7 +51,7 @@ include_us;
     Vlv0 = 100;                         % Initial left ventricle volume (mL)
     Ps0 = 100;                          % Initial systemic pressure (mmHg)
     
-    A_deviation =   10;                 % Percentage deviation from true A
+    A_deviation =   0;                 % Percentage deviation from true A
     B_deviation =   0;                  % Percentage deviation from true B
     E_deviation =   0;                  % Percentage deviation from true E
     B0 = 0.01;

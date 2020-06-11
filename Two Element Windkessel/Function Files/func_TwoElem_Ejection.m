@@ -45,10 +45,12 @@ v2 : Suraj R Pawar, 5-24-2020
 v3 : Suraj R Pawar, 5-28-2020
     - Add version mechanism to extract known parameters and set dynamic
     equations for estimated parameters based on the experiment being run
+v4 : Suraj R Pawar, 6-11-2020
+    - Passing variable 'counts' to func_handle_parameters
 %}
 
     % Get known / estimated parameters depending on version
-        [getparams, paramdots] = func_handle_parameters(parameters, version, sigmas);
+        [getparams, paramdots] = func_handle_parameters(parameters, version, counts, sigmas);
         Rsvr = getparams.Rsvr;
         Cs = getparams.Cs;
         Pr = getparams.Pr;       

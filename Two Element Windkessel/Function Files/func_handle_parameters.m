@@ -1,4 +1,4 @@
-function [getparams, paramdots] = func_handle_parameters(parameters, version, sigmas, x)
+function [getparams, paramdots] = func_handle_parameters(parameters, version, counts, sigmas, x)
 %% Extract parameters and set parameter state equations based on versions
 %{
 ----------------------------- Description ---------------------------------
@@ -22,6 +22,11 @@ parameters : Vector containing true value of all parameters
              11. E   : Maximum LV elastance (mmHg/mL)
              12. V0  : Unstressed blood volume (mL)
 version    : Version number of the experiment
+counts     : 1. num_states : Number of states and parameters to be
+                estimated
+             2. num_meas : Number of measurements
+             3. num_process_noise_terms : Number of process noise terms
+             4. num_meas_noise_terms : Number of meas noise terms
 sigmas (o) : Sigma points (optional)
              [sigma_x; -- States and parameters to be estimated
               sigma_v; -- Process noise terms
@@ -38,9 +43,10 @@ v1 : Suraj R Pawar, 5-28-2020
     - Initialize
 v2 : Suraj R Pawar, 6-10-2020
     - Clean up comments describing new cases
+v3 : Suraj R Pawar, 6-11-2020
+    - Add counts to the inputs so num_states doesn't have to be hardcoded
 %}
-    
-    num_states = 2; % Number of states in the two element windkessel model (2)
+        
     switch version
         case 1
             % Estimation of B and Emax
@@ -52,12 +58,13 @@ v2 : Suraj R Pawar, 6-10-2020
             getparams.tvc = parameters(7);
             getparams.tc = parameters(8);
             getparams.A = parameters(9);
-            if nargin == 3
+            if nargin == 4
                 % Sigma points passed
-                getparams.B = sigmas((num_states+1),:);
-                getparams.E = sigmas((num_states+2),:);        
+                num_states = counts(1);
+                getparams.B = sigmas((num_states-1),:);
+                getparams.E = sigmas((num_states),:);        
                 paramdots = zeros(2,size(sigmas,2));
-            elseif nargin == 4
+            elseif nargin == 5
                 % Last best estimate of the augmented state passed
                 getparams.B = x(3);
                 getparams.E = x(4);
@@ -79,11 +86,12 @@ v2 : Suraj R Pawar, 6-10-2020
             getparams.tc = parameters(8);
             getparams.B = parameters(10);
             getparams.E = parameters(11);
-            if nargin == 3
+            if nargin == 4
                 % Sigma points passed
-                getparams.A = sigmas((num_states+1),:);                
+                num_states = counts(1);
+                getparams.A = sigmas((num_states),:);                
                 paramdots = zeros(1,size(sigmas,2));
-            elseif nargin == 4
+            elseif nargin == 5
                 % Last best estimate of the augmented state passed
                 getparams.A = x(3);                
                 paramdots = zeros(1,1);
@@ -101,13 +109,15 @@ v2 : Suraj R Pawar, 6-10-2020
             getparams.HR = parameters(6);
             getparams.tvc = parameters(7);
             getparams.tc = parameters(8);            
-            if nargin == 3
+            if nargin == 4
                 % Sigma points passed
-                getparams.A = sigmas((num_states+1),:);
-                getparams.B = sigmas((num_states+2),:);
-                getparams.E = sigmas((num_states+3),:);        
+                num_states = counts(1);
+                getparams.A = sigmas((num_states-2),:);
+                getparams.B = sigmas((num_states-1),:);
+                getparams.E = sigmas((num_states),:);        
                 paramdots = zeros(3,size(sigmas,2));
-            elseif nargin == 4
+            elseif nargin == 5
+                num_states = counts(1);
                 % Last best estimate of the augmented state passed
                 getparams.A = x(3);
                 getparams.B = x(4);
@@ -119,7 +129,14 @@ v2 : Suraj R Pawar, 6-10-2020
                 getparams.B = 0;
                 getparams.E = 0;
                 paramdots = zeros(3,1);
-            end            
+            end    
+        case 4
+            % Estimation of Cs and Pr
+            num_states = counts(1);
+            getparams.Rsvr = parameters(1);
+            getparams.Cs = sigmas((num_states-1),:);
+            getparams.Pr = sigmas((num_states),:);
+            paramdots = zeros(2,size(sigmas,2));
     end
        
 end
