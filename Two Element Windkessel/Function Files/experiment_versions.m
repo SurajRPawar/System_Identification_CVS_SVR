@@ -18,4 +18,5 @@ version 2 : Estimation of A during isovolumic expansion + filling stage
 version 3 : Estimation of A, B, Emax during iso contraction + ejection
 ABE version : No numerical version needed. The code uses version 1 and
             version 2 interchangably
+version 4 : Estimation of Cs, Pr during all stages of CVS
 %}
