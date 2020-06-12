@@ -25,8 +25,8 @@ include_us;
     % Initial Conditions    
     Ps0 = 120;                      % Initial systemic pressure (mmHg)        
     
-    Cs0 = 5;                        % Initial guess for systemic compliance (mL/mmHg)
-    Pr0 = 10;                       % Initial guess for Pr (mmHg)
+    Cs0 = 1;                        % Initial guess for systemic compliance (mL/mmHg)
+    Pr0 = 3;                        % Initial guess for Pr (mmHg)
     
     p0 = diag([250, 25, 1000]);    % Initial error covariance
         
@@ -102,6 +102,13 @@ include_us;
                                                                    version, waitflag);
     fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
+%% Console output
+    Csmean = mean(xhat(2,[end-1000:end]));
+    Prmean = mean(xhat(3,[end-1000:end]));
+    
+    fprintf('Estimated Cs : %.3f mL/mmHg\n', Csmean);
+    fprintf('Estimated Pr : %.3f mmHg\n', Prmean);
+    
 %% Figures
     figure;   
     Psplot = subplot(3,1,1);

@@ -29,6 +29,7 @@ the right stage of the cardiac cycle is as follows :
    estimation
 
 -------------------------------- Verisons ---------------------------------
+%{
 v1 : 5-26-2020, Suraj R Pawar
     - Initialize
 v2 : 5-28-220, Suraj R Pawar
@@ -40,6 +41,9 @@ v3 : 6-9-2020, Suraj R Pawar
 v4 : Suraj R Pawar, 6-11-2020
     - Tested after adding 'counts' as an extra input to
     func_handle_parameters
+%}
+v5 : Suraj R Pawar, 6-12-2020
+    - Added Qafilt structure that contains filtered signal and thresholds
 %}
 
 close all; clear all; clc;
@@ -113,6 +117,10 @@ include_us;
     Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0    
     y = [Plv; Pao; Qa];    
     
+    Qafiltstruct.signal = Qa_filtered;
+    Qafiltstruct.upper_threshold = 500;
+    Qafiltstruct.lower_threshold = 0;
+    
     % Noise and parameters for UKF
     %{
     Further comments : 
@@ -131,7 +139,7 @@ include_us;
     waitflag = 1;
     [xhat, yhat, Paug, teject] = func_TwoElem_SysID_UKF_BE_Ejection(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
-                                                                   version, Qa_filtered, waitflag);
+                                                                   version, Qafiltstruct, waitflag);
 
 %% Figures
     figure;   

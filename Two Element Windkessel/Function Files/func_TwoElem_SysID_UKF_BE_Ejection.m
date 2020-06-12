@@ -1,6 +1,6 @@
 function [xhat, yhat, p_aug, tselect] = func_TwoElem_SysID_UKF_BE_Ejection(t, y, Qvad, x0, theta0,...
                                                                               p0, q, r, parameters,...
-                                                                              ukf_params, version, Qafilt, waitflag)        
+                                                                              ukf_params, version, Qafiltstruct, waitflag)        
 % UKF for B and Emax estimation using Two Element Windkessel model
 %{
 ----------------------------- DESCRIPTION ---------------------------------
@@ -54,6 +54,7 @@ p_aug   : Covariances for the augmented state [x; theta; v; n]
 tselect : Time vector for iso contraction and ejection windows
 
 ----------------------------- VERSION -------------------------------------
+%{
 v1 : Suraj R Pawar, 5-26-2020
     - Initialize
 v2 : Suraj R Pawar, 5-28-2020
@@ -73,9 +74,14 @@ v6 : Suraj R Pawar, 6-10-2020
     - Updated Qa threshold to stop marking ejection.
     - New Threshold is 0
 %}
+v7 : Suraj R Pawar, 6-12-2020
+    - Added Qafilter structure as input
+    - Structure houses the filtered signal, upper and lower thresholds for
+    determining the stage of the cardiac cycle.
+%}
     
     %% Argument handling
-        if nargin < 13
+        if nargin < 14
             waitflag = 0;   % If no input provided for waitflag, set it to 0
         end
         
@@ -124,6 +130,12 @@ v6 : Suraj R Pawar, 6-10-2020
         %}
         
         % Extract the right stage from measurements
+        
+        % Extract Qa filtered signal and thresholds
+        Qafilt = Qafiltstruct.signal;
+        upper_threshold = Qafiltstruct.upper_threshold;
+        lower_threshold = Qafiltstruct.lower_threshold;
+        
         for i = 1:steps 
             tr = mod(t(i),tc);
             if tr >= 0 && tr <= dt
@@ -134,14 +146,14 @@ v6 : Suraj R Pawar, 6-10-2020
             end
             
             if rwt == 1
-                if Qafilt(i) > 500; % After R wave, wait for Qa to rise above 500 mL before setting Qcheck flag
+                if Qafilt(i) > upper_threshold % After R wave, wait for Qa to rise above 500 mL before setting Qcheck flag
                     Qcheck = 1;
                     rwt = 0;
                 end
                 marking = 1;
             else
                 if Qcheck == 1
-                    if Qafilt(i) > 0
+                    if Qafilt(i) > lower_threshold
                         marking = 1;
                     else
                         marking = 0;

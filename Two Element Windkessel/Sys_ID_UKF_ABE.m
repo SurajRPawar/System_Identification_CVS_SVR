@@ -28,10 +28,14 @@ all beats.
    estimation
 
 -------------------------------- Verisons ---------------------------------
+%{
 v1 : 6-10-2020, Suraj R Pawar
     - Initialize
 v2 : Suraj R Pawar, 6-11-2020
     - Tested after adding 'counts' variable to func_handle_parameters
+%}
+v3 : Suraj R Pawar, 6-12-2020
+    - Added Qafilter structure containing filtered signal and thresholds
 %}
 
 close all; clear all; clc;
@@ -89,13 +93,9 @@ include_us;
     parameters = [Rsvr_true; Cs_true; Pr_true; Ra_true; Rm_true; HR_true; t_vc_true; t_c_true;...
                   A_true; B_true; E_true; V0_true]; % To be passed to UKF       
 
-    % Filter Plv - will be used to detect filling windows
+    % Filter Qa
     dt_original = data.dt;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
-    Plv_original = data.Plv;
-    Plv_filtered = lowpass(Plv_original, 4, Fs);
-    
-    % Filter aortic flow - will be used to detect ejection windows    
     Qa_original = data.Qa;
     Qa_filtered = lowpass(Qa_original, 30, Fs);
     
@@ -105,11 +105,11 @@ include_us;
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
     t = [0: dt : tf];                          % Time vector with 1 ms time steps    
     Ps_original = data.Ps;    
+    Plv_original = data.Plv;
     Qvad_original = data.Qvad;    
     Vbar_original = data.x(1,:) - V0_true;    
     
-    Plv = interp1(t_original, Plv_original, t);
-    Plv_filtered = interp1(t_original, Plv_filtered, t);
+    Plv = interp1(t_original, Plv_original, t);    
     Pao = interp1(t_original, Ps_original, t);
     Qa = interp1(t_original, Qa_original, t);
     Qa_filtered = interp1(t_original, Qa_filtered, t);
@@ -117,6 +117,10 @@ include_us;
     Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0
     
     y = [Plv; Pao; Qa];    
+    
+    Qafiltstruct.signal = Qa_filtered;
+    Qafiltstruct.upper_threshold = 500;
+    Qafiltstruct.lower_threshold = 0;
     
     % Noise and parameters for UKF
     %{
@@ -163,9 +167,9 @@ include_us;
             tl = t(index_start:index_stop);            
             yl = y(:,[index_start:index_stop]);
             Qvadl = Qvad(index_start:index_stop);
-            Plv_filteredl = Plv_filtered(index_start:index_stop);
             Qa_filteredl = Qa_filtered(index_start:index_stop);
-        
+            Qafiltstruct.signal = Qa_filteredl;
+            
         % B, E estimator                        
             if i ~= 1
                 p_be = squeeze(Paug_be([3:4],[3:4],end));   % Last error covariance of parameters
@@ -184,7 +188,7 @@ include_us;
             p0l = blkdiag(p0l_states, p_be);    % Reset P for states
             [xhat_be, yhat_be, Paug_be, t_be] = func_TwoElem_SysID_UKF_BE_Ejection(tl, yl, Qvadl, x0_be, theta0l, p0l,...
                                                                        q_be, r, parametersl, ukf_params,...
-                                                                       version, Qa_filteredl);
+                                                                       version, Qafiltstruct);
                                                                
         % A estimator
             if i~= 1
@@ -204,7 +208,7 @@ include_us;
             p0l = blkdiag(p0l_states, p_a);
             [xhat_a, yhat_a, Paug_a, t_a] = func_TwoElem_SysID_UKF_A(tl, yl, Qvadl, x0_a, theta0l, p0l,...
                                                                    q_a, r, parametersl, ukf_params,...
-                                                                   version, Qa_filteredl);
+                                                                   version, Qafiltstruct);
                                                                
         % Store in variables
             tbe_ukf = [tbe_ukf, t_be];

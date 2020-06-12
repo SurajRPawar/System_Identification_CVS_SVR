@@ -1,6 +1,6 @@
 function [xhat, yhat, p_aug, tselect] = func_TwoElem_SysID_UKF_A(t, y, Qvad, x0, theta0,...
                                                                               p0, q, r, parameters,...
-                                                                              ukf_params, version, Qafilt, waitflag)        
+                                                                              ukf_params, version, Qafiltstruct, waitflag)        
 % UKF for A estimation using Two Element Windkessel model
 %{
 ----------------------------- DESCRIPTION ---------------------------------
@@ -42,8 +42,12 @@ ukf_params : [alpha; kappa; beta]
 version    : The version of experiment to run. This verison will change the
              way parameters and their dynamic equations are set. Refer to
              the MATLAB file 'experiment_versions.m'
-Qafildt    : Filtered aortic flow signal, used for selection of filling
-             stage
+Qafiltstruct : Structure containing : 
+                1. signal : Filtered Qa signal (mL/s)
+                2. upper_threshold : Upper threshold for setting Qcheck
+                                     flag to TRUE
+                3. lower_threshold : Lower threshold for marking end of
+                                     filling stage.
 waitflag (o) : Wait flag (0 or 1) to display GUI waitbar. 1 = display
                waitbar
 
@@ -54,6 +58,7 @@ p_aug   : Covariances for the augmented state [x; theta; v; n]
 tselect : Time vector for iso contraction and ejection windows
 
 ----------------------------- VERSION -------------------------------------
+%{
 v1 : Suraj R Pawar, 5-26-2020
     - Initialize
 v2 : Suraj R Pawar, 5-28-2020
@@ -68,9 +73,14 @@ v5 : Suraj R Pawar, 6-10-2020
     - Using Qa filtered signal for selection of filling
     - Option to show or hide waitbar added
 %}
+v6 : Suraj R Pawar, 6-12-2020
+    - Added Qafilter structure as input
+    - Structure houses the filtered signal, upper and lower thresholds for
+    determining the stage of the cardiac cycle.
+%}
     
     %% Argument handling
-        if nargin < 13
+        if nargin < 14
             waitflag = 0;   % Don't display waitbar if the argument isn't passed in
         end
         
@@ -160,6 +170,10 @@ v5 : Suraj R Pawar, 6-10-2020
             end                        
         end
         %}
+        % Extract Qa filtered signal and thresholds
+        Qafilt = Qafiltstruct.signal;
+        upper_threshold = Qafiltstruct.upper_threshold;
+        lower_threshold = Qafiltstruct.lower_threshold;
         
         for i = 1:steps 
             tr = mod(t(i),tc);
@@ -169,13 +183,13 @@ v5 : Suraj R Pawar, 6-10-2020
             end
             
             if rwt == 1
-                if Qafilt(i) > 500; % After R wave, wait for Qa to rise above 500 mL before setting Qcheck flag
+                if Qafilt(i) > upper_threshold % After R wave, wait for Qa to rise above 500 mL before setting Qcheck flag
                     Qcheck = 1;
                     rwt = 0;
                 end                
             else
                 if Qcheck == 1
-                    if Qafilt(i) < 0
+                    if Qafilt(i) < lower_threshold
                         marking = 1;
                         Qcheck = 0;
                         rst = 1;                    
