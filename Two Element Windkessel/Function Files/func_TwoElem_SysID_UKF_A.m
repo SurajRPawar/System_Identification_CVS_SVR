@@ -72,15 +72,17 @@ v4 : Suraj R Pawar, 6-9-2020
 v5 : Suraj R Pawar, 6-10-2020
     - Using Qa filtered signal for selection of filling
     - Option to show or hide waitbar added
-%}
 v6 : Suraj R Pawar, 6-12-2020
     - Added Qafilter structure as input
     - Structure houses the filtered signal, upper and lower thresholds for
     determining the stage of the cardiac cycle.
 %}
+v7 : Suraj R Pawar, 6-14-2020
+    - Fixed number of arguments being checked to set waitflag
+%}
     
     %% Argument handling
-        if nargin < 14
+        if nargin < 13
             waitflag = 0;   % Don't display waitbar if the argument isn't passed in
         end
         

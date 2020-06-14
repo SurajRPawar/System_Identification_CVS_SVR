@@ -73,15 +73,17 @@ v5 : Suraj R Pawar, 6-10-2020
 v6 : Suraj R Pawar, 6-10-2020
     - Updated Qa threshold to stop marking ejection.
     - New Threshold is 0
-%}
 v7 : Suraj R Pawar, 6-12-2020
     - Added Qafilter structure as input
     - Structure houses the filtered signal, upper and lower thresholds for
     determining the stage of the cardiac cycle.
 %}
+v8 : Suraj R Pawar, 6-14-2020
+    - Fixed number of arguments being checked to set waitflag
+%}
     
     %% Argument handling
-        if nargin < 14
+        if nargin < 13
             waitflag = 0;   % If no input provided for waitflag, set it to 0
         end
         
@@ -189,7 +191,7 @@ v7 : Suraj R Pawar, 6-12-2020
         plot(tselect,Qa_ejection,'r.');
         hold off;
         %}        
-          
+%           1;
         % Re-organize variables
         t = tselect;
         Qvad = Qvad_ejection;
