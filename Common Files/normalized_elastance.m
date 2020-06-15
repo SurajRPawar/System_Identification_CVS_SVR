@@ -34,5 +34,5 @@ v3 : Suraj R Pawar, 5-29-2020
         en = 0.5*( 1 + cos((3*pi*tn/t_vc) - 2*pi) );
     else
         en = 0;
-    end
+    end    
 end

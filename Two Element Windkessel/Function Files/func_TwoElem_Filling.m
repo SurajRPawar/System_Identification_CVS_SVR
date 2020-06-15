@@ -29,8 +29,10 @@ sigmas_x_new : New sigma points propagated through ejection dynamics
 est_meas     : Estimated measurements
 
 -------------------------- VERSION HISTORY --------------------------------
+%{
 v1 : Suraj R Pawar, 5-24-2020
      - Initialize
+%}
 v2 : Suraj R Pawar, 6-11-2020
     - Send counts input to func_handle_parameters
     - This function will use counts to determine the number of states
@@ -69,8 +71,9 @@ v2 : Suraj R Pawar, 6-11-2020
         Plv = func_Plv(e_n, A, B, Emax, Vbar);        
         
     % Valve flow
-        Qa = 0;
-        Qm = (1./Rv).*(Pr - Plv);
+        Qa = 0;        
+        Qm = (1./Rv).*(Pr - Plv);        
+        
         % Do not let Qa be negative
         if any(Qm <= 0) Qm(find(Qm <= 0)) = 0; end
         

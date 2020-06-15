@@ -1,20 +1,21 @@
-%% Cs and Pr estimation using UKF and Two Element Windkessel model
+%% Cs estimation using UKF and Two Element Windkessel model
 %{
 ---------------------------- Description ----------------------------------
 Uses Unscented Kalman Filter (UKF) to perform system identification of the
 CVS using a two element model as the model basis. Assume that we know all
-other parameters except for Cs and Pr. Estimation of these parameters can 
+other parameters except for Cs. Estimation of these parameters can 
 be performed during all stages of the cardiac cycle. 
 
 ------------------------- Assumptions -------------------------------------
-1. We assume that we know Rsvr, A, B, Emax, Rv
+1. We assume that we know Rsvr, A, B, Emax, Rv, Pr
 2. UKF can be used to estimation A, B, Emax
 3. Rv can be approximated as the mean dP / mean Qa
 4. SVR can be estimated using the formula
         SVR = (MAP - CVP) / CO
+5. Pr can be approximated from the Plv value during filling stage
 
 -------------------------------- Verisons ---------------------------------
-v1 : 6-11-2020, Suraj R Pawar
+v1 : 6-14-2020, Suraj R Pawar
     - Initialize
 %}
 
@@ -23,14 +24,13 @@ include_us;
 
 %% User Inputs
     % Initial Conditions    
-    Ps0 = 70;                      % Initial systemic pressure (mmHg)        
+    Ps0 = 100;                       % Initial systemic pressure (mmHg)        
     
-    Cs0 = 1;                        % Initial guess for systemic compliance (mL/mmHg)
-    Pr0 = 20;                        % Initial guess for Pr (mmHg)
+    Cs0 = 0.1;                        % Initial guess for systemic compliance (mL/mmHg)    
     
-    p0 = diag([100, 25, 50]);    % Initial error covariance
+    p0 = diag([100, 5]);           % Initial error covariance
         
-    param_noise_std = 1*[1e-10; 1e-10];    % White noise standard deviation for parameters [A]
+    param_noise_std = 1*[1e-10];    % White noise standard deviation for parameters [A]
     
     % UKF parameters
     alpha = 1e-3;
@@ -39,17 +39,17 @@ include_us;
     
     % What is the version of this experiment ? 
     experiment_versions;            % Contains description of versions
-    version = 4;
+    version = 5;
         
 %% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
+    data = noisy_twoelem_data;      % Load noisy two element data using this function
       
     % True value of parameters
     Cs_true = data.parameters(1);
     Rsvr_true = data.parameters(2);
     Pr_true = data.parameters(3);
-    Ra_true = 0.0021; %data.parameters(4);
-    Rm_true = 0.0021; %data.parameters(5);
+    Ra_true = data.parameters(4);
+    Rm_true = data.parameters(5);
     A_true = data.parameters(6);    
     B_true = data.parameters(7);
     E_true = data.parameters(8);
@@ -92,7 +92,7 @@ include_us;
     r = diag(meas_noise_std.^2);                      % Measurement noise covariance
     ukf_params = [alpha; kappa; beta];
     x0 = [Ps0];                                       
-    theta0 = [Cs0; Pr0];
+    theta0 = [Cs0];
     
 %% UKF 
     fprintf('Beginning UKF estimation \n'); tic;
@@ -103,17 +103,16 @@ include_us;
     fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
 %% Console output
-    Csmean = mean(xhat(2,[end-100:end]));
-    Prmean = mean(xhat(3,[end-100:end]));
+    Csmean = mean(xhat(2,[end-100:end]));   
     
-    fprintf('Estimated Cs : %.3f mL/mmHg\n', Csmean);
-    fprintf('Estimated Pr : %.3f mmHg\n', Prmean);
+    fprintf('Estimated Cs : %.3f mL/mmHg\n', Csmean);    
     
 %% Figures
     figure;   
-    Psplot = subplot(3,1,1);
-    Csplot = subplot(3,1,2);
-    Prplot = subplot(3,1,3);
+    numrows = 2;
+    numcols = 1;
+    Psplot = subplot(numrows,numcols,1);
+    Csplot = subplot(numrows,numcols,2);
     ax = [];
     
     axes(Psplot); % Ps
@@ -132,16 +131,6 @@ include_us;
     hold off;
     legend({'Actual','Estimated'},'Orientation','horizontal');
     title('Cs (mL/mmHg)');         
-    ax = [ax, gca];
-    
-    axes(Prplot); % Pr
-    hold on;
-    plot(t,Pr_true*ones(size(t)),'--k');
-    plot(t,xhat(3,:));
-    hold off;
-    legend({'Actual','Estimated'},'Orientation','horizontal');
-    title('Pr (mmHg)');
-    xlabel('Time (s)');        
-    ax = [ax, gca];
+    ax = [ax, gca];    
     
     linkaxes(ax,'x');

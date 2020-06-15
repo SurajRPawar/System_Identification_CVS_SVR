@@ -54,7 +54,7 @@ include_us;
 %% User Inputs
     % Initial Conditions
     V0_guess = 5;                   % Guess for unstressed blood volume
-    Vlv0 = 40;                      % Initial left ventricle volume (mL)
+    Vlv0 = 45;                      % Initial left ventricle volume (mL)
     Ps0 = 120;                      % Initial systemic pressure (mmHg)
     
     A_deviation = 0;                % Percentage deviation from true A
@@ -76,7 +76,7 @@ include_us;
     version = 2;
         
 %% Measurements and parameters
-    data = noisy_twoelem_data;      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
       
     % True value of parameters
     Cs_true = data.parameters(1);
@@ -102,7 +102,7 @@ include_us;
     Qa_filtered = lowpass(Qa_original, 30, Fs);
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.001;
+    dt = 0.0001;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
     t = [0: dt : tf];                          % Time vector with 1 ms time steps    
@@ -121,7 +121,7 @@ include_us;
     y = [Plv; Pao; Qa];    
     
     Qafiltstruct.signal = Qa_filtered;
-    Qafiltstruct.upper_threshold = 500;
+    Qafiltstruct.upper_threshold = 100;
     Qafiltstruct.lower_threshold = 0;
     
     % Noise and parameters for UKF
@@ -140,10 +140,10 @@ include_us;
     
 %% UKF 
     fprintf('Beginning UKF estimation \n'); tic;
-    waitflag = 1;
+    waitflag = 1;   
     [xhat, yhat, Paug, tselect] = func_TwoElem_SysID_UKF_A(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
-                                                                   version, Qafiltstruct, waitflag);
+                                                                   version, Qafiltstruct, waitflag);    
     fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
 %% Figures

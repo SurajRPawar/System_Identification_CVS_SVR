@@ -77,9 +77,12 @@ v7 : Suraj R Pawar, 6-12-2020
     - Added Qafilter structure as input
     - Structure houses the filtered signal, upper and lower thresholds for
     determining the stage of the cardiac cycle.
-%}
 v8 : Suraj R Pawar, 6-14-2020
     - Fixed number of arguments being checked to set waitflag
+%}
+v9 : Suraj R Pawar, 6-15-2020
+    - Moved dt calculation before the signal processing block that
+    determines the stages.
 %}
     
     %% Argument handling
@@ -97,6 +100,7 @@ v8 : Suraj R Pawar, 6-14-2020
         
     %% Sweep Qa signal and index estimation windows
         steps = length(t);  % Total number of samples in measurement signals
+        dt = t(2) - t(1);   % Time vector : [t0 : dt : tf]
         Plv = y(1,:);
         Pao = y(2,:);
         Qa = y(3,:);         
@@ -198,8 +202,7 @@ v8 : Suraj R Pawar, 6-14-2020
         y = [Plv_ejection; Pao_ejection; Qa_ejection];
         
     %% Variables and Initial conditions    
-        % Count everything            
-            dt = t(2) - t(1);                           % Time vector : [t0 : dt : tf]
+        % Count everything                        
             num_states = length(x0) + length(theta0);   % Number of states and parameters to estimate            
             num_process_noise_terms = size(q,1);
             num_meas_noise_terms = size(r,1);
@@ -304,7 +307,8 @@ v8 : Suraj R Pawar, 6-14-2020
                 p_aug(:,:,i) = blkdiag(cov_post, diag(QdB), r);   
                 
             % Update measurements
-                yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, 2, version);                                                                     
+                stage = 2;  % Ejection
+                yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, stage, version);                                                                     
         end
  
         if waitflag == 1

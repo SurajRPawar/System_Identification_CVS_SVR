@@ -36,8 +36,10 @@ sigmas_x_new : New sigma points propagated through CVS dynamics
 est_meas     : Estimated measurements
 
 -------------------------- VERSION HISTORY --------------------------------
+%{
 v1 : Suraj R Pawar, 6-11-2020
      - Initialize
+%}
 v2 : Suraj R Pawar, 6-11-2020
     - Passing 'counts' to func_handle_parameters
 %}

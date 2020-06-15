@@ -44,23 +44,23 @@ include_us;
 %% User Inputs
     % Initial Conditions for B, E estimator
     V0_guess_be = 5;                       % Guess for unstressed blood volume
-    Vlv0_be = 100;                         % Initial left ventricle volume (mL)
-    Ps0_be = 100;                          % Initial systemic pressure (mmHg)
+    Vlv0_be = 250;                         % Initial left ventricle volume (mL)
+    Ps0_be = 70;                          % Initial systemic pressure (mmHg)
     
     % Initial conditions for A estimator
     V0_guess_a = 5;
-    Vlv0_a = 40;
-    Ps0_a = 140;
+    Vlv0_a = 250;
+    Ps0_a = 90;
     
     Pr_deviation = 0;                  % Percentage deviation from true Pr
     Rv_deviation = 0;                  % Percentage deviation from true Rv
     
     A0 = 0.01;    
     B0 = 0.01;
-    Emax0 = 1;
+    Emax0 = 0.1;
     
-    p0_states = diag([250, 100]);      % Initial error covariance of states Vbar and Ps
-    p0_be = diag([1e-3, 4]);                        % Initial error covariances for parameters B, Emax
+    p0_states = diag([250, 50]);      % Initial error covariance of states Vbar and Ps
+    p0_be = diag([1e-3, 10]);                        % Initial error covariances for parameters B, Emax
     p0_a = [1e-1];                                  % Initial error covariance for parameter A
     
     param_noise_std_be = [1e-10; 1e-10];  % White noise standard deviation for parameters [B, Emax]
@@ -74,15 +74,17 @@ include_us;
     % What is the version of this experiment ? 
     experiment_versions;               % Contains description of versions  
         
+    waitflag = 1;
+    
 %% Measurements and parameters
-    data = noisy_twoelem_data;      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
       
     % True value of parameters
-    Cs_true = data.parameters(1);
+    Cs_true = 0.869; %data.parameters(1);
     Rsvr_true = data.parameters(2);
-    Pr_true = (1 + Pr_deviation/100)*data.parameters(3);
-    Ra_true = (1 + Rv_deviation/100)*data.parameters(4);
-    Rm_true = (1 + Rv_deviation/100)*data.parameters(5);
+    Pr_true = 1.353; %(1 + Pr_deviation/100)*data.parameters(3);
+    Ra_true = 0.0021; %(1 + Rv_deviation/100)*data.parameters(4);
+    Rm_true = 0.0021; %(1 + Rv_deviation/100)*data.parameters(5);
     A_true = data.parameters(6);    
     B_true = data.parameters(7);
     E_true = data.parameters(8);
@@ -97,10 +99,10 @@ include_us;
     dt_original = data.dt;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 30, Fs);
+    Qa_filtered = lowpass(Qa_original, 50, Fs);
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.001;
+    dt = 0.0001;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
     t = [0: dt : tf];                          % Time vector with 1 ms time steps    
@@ -119,7 +121,7 @@ include_us;
     y = [Plv; Pao; Qa];    
     
     Qafiltstruct.signal = Qa_filtered;
-    Qafiltstruct.upper_threshold = 500;
+    Qafiltstruct.upper_threshold = 100;
     Qafiltstruct.lower_threshold = 0;
     
     % Noise and parameters for UKF
@@ -155,8 +157,20 @@ include_us;
     B_ukf = [];
     Emax_ukf = [];
     
+    if waitflag == 1 
+        f = waitbar(0,'UKF'); 
+        console_freq = floor(data.num_beats/3);
+    end
+    
     for i = 1 : data.num_beats          
         
+        % Console out
+            if waitflag == 1
+                if mod(i,console_freq) == 0                    
+                    waitbar((i/data.num_beats),f,'UKF');
+                end
+            end
+                
         % Collect all samples from current beat
             t_start = (i-1)*t_c_true;
             t_stop = i*t_c_true;
@@ -175,9 +189,9 @@ include_us;
                 p_be = squeeze(Paug_be([3:4],[3:4],end));   % Last error covariance of parameters
                 parametersl(9) = xhat_a(3,end);             % Last good estimate of A 
                 theta0l = xhat_be([3:4],end);               % Last good estimate of B, Emax
-                p0l_states = p0_states;
-                %p0l_states = squeeze(Paug_a([1:2],[1:2],end));                
-                %x0_be = xhat_a([1:2],end);
+                %p0l_states = p0_states;
+                p0l_states = squeeze(Paug_a([1:2],[1:2],end));                
+                x0_be = xhat_a([1:2],end);
             else
                 p_be = p0_be;
                 parametersl(9) = A0;
@@ -202,8 +216,8 @@ include_us;
             x0_a = xhat_be([1:2],end);
             p0l_states = squeeze(Paug_be([1:2],[1:2],end));
             %p0l_states = p0_states;
-            parameters(10) = xhat_be(3,end);
-            parameters(11) = xhat_be(4,end);
+            parametersl(10) = xhat_be(3,end);
+            parametersl(11) = xhat_be(4,end);
             version = 2;
             p0l = blkdiag(p0l_states, p_a);
             [xhat_a, yhat_a, Paug_a, t_a] = func_TwoElem_SysID_UKF_A(tl, yl, Qvadl, x0_a, theta0l, p0l,...
@@ -224,6 +238,11 @@ include_us;
             B_ukf = [B_ukf, xhat_be(3,:)];
             Emax_ukf = [Emax_ukf, xhat_be(4,:)];            
     end
+    
+    if waitflag == 1
+        close(f);
+    end
+        
     fprintf('UKF estimation finished in %.2f seconds\n', toc);    
     
 %% Calculate accuracies
@@ -250,7 +269,7 @@ include_us;
     hold on;
     plot(t,Vbar);
     plot(tbe_ukf,xbe_ukf(1,:),'r.', 'MarkerSize',default_marker);
-    plot(ta_ukf,xa_ukf(1,:),'g.', 'MarkerSize',default_marker);
+    plot(ta_ukf,xa_ukf(1,:),'g.', 'MarkerSize',default_marker);   
     hold off;
     legend({'Measured','BE UKF', 'A UKF'},'Orientation','horizontal');
     title('Vbar (mL)');
