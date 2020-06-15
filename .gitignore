@@ -1,6 +1,7 @@
 # Folders to ignore
 **/Results
 **/Measurement Files
+**/Model 2
 
 # Ignore some files created by MATLAB
 *.asv
