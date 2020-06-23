@@ -7,8 +7,17 @@ script reads the signals from a file, displays the power spectrum and
 allows the user to test lowpass filters for a certain cutoff frequency. 
 
 ------------------------- Versions ----------------------------------------
+%{
 v1 : Suraj R Pawar, 6-12-2020
     - Initialize
+v2 : Suraj R Pawar, 6-16-2020
+    - Added include_us script
+%}
+v3 : Suraj R Pawar, 6-23-2020
+    - Signal trimming is added within the noisy_twoelem_data funciton file,
+    therefore we don't need to do any signal trimming in this script. 
+    - Removed the code section related to valve resistance calculation.
+    That value is now estimated using the Cs equations
 %}
 
 clear all; close all; clc;
@@ -24,7 +33,7 @@ HR = data.parameters(10);
 num_beats = data.num_beats;
 tc = data.parameters(11);
 tf = tc*num_beats;
-t = [0:dt:tf];
+t = data.t;
 
 %% Power Spectrum
 N = length(t);
@@ -33,6 +42,7 @@ if mod(N,2) ~= 0
     Plv = Plv(1:end-1);
     Pao = Pao(1:end-1);
     Qa = Qa(1:end-1);
+    Qvad = Qvad(1:end-1);
     t = t(1:end-1);
     N = N-1;
 end
@@ -80,66 +90,56 @@ xlim([0 50]);
 %% Lowpass filtering
 
 % Cutoff frequencies in Hz
-wpass_plv = 12;
-wpass_pao = 12;
-wpass_qa = 30;
+wpass_plv = 5;
+wpass_pao = 5;
+wpass_qa = 5;
 
 % Lowpass filtering
-Plvf = lowpass(Plv, wpass_plv, Fs);
-Paof = lowpass(Pao, wpass_pao, Fs);
-Qaf = lowpass(Qa, wpass_qa, Fs);
+Plvf = lowpass(Plv, wpass_plv, Fs, 'ImpulseResponse','iir','Steepness',0.8);
+Paof = lowpass(Pao, wpass_pao, Fs, 'ImpulseResponse','iir','Steepness',0.8);
+Qaf = lowpass(Qa, wpass_qa, Fs, 'ImpulseResponse','iir','Steepness',0.98);
 
 % Smoothing
-Plvs = smooth(Plvf,50);
-Paos = smooth(Paof,50);
-Qas = smooth(Qaf,5);
+Plvs = smooth(Plvf,10);
+Paos = smooth(Paof,10);
+Qas = smooth(Qaf,10);
 
 % Figure
 figure;
+linewidth = 2;
+ax = [];
+
 subplot(4,1,1);
 hold on;
-plot(t,Plv,'color',0.6*ones(1,3));
-plot(t,Plvs,'b-');
+plot(t,Plv,'color',0.7*ones(1,3), 'LineWidth',linewidth);
+plot(t,Plvf,'b-');
 hold off;
+legend('Measured','Filtered');
 title('Plv (mmHg)');
+ax = [ax, gca];
 
 subplot(4,1,2);
 hold on;
-plot(t,Pao,'color',0.6*ones(1,3));
-plot(t,Paos,'b-');
+plot(t,Pao,'color',0.7*ones(1,3), 'LineWidth',linewidth);
+plot(t,Paof,'b-');
 hold off;
+legend('Measured','Filtered');
 title('Pao (mmHg)');
+ax = [ax, gca];
 
 subplot(4,1,3);
 hold on;
-plot(t,Qvad(1:end-1),'color',0.6*ones(1,3));
-plot(t,Qas,'b-');
+plot(t,Qvad,'k');
+plot(t,Qa,'color',0.7*ones(1,3), 'LineWidth',linewidth);
+plot(t,Qaf,'b-');
 hold off;
-legend('Qvad', 'Qa smooth');
+legend('Qvad measured', 'Qa measured', 'Qa filtered');
 title('Qa (mL/s)');
+ax = [ax, gca];
 
 subplot(4,1,4);
-plot(t,Plvs,t,Paos);
-title('Plv and Pao smoothed');
+plot(t,Plvf,t,Paof);
+title('Plv and Pao filtered');
+ax = [ax, gca];
 
-%% Determine average valve resistance
-steps = length(Plvf);
-j = 1;
-
-for i = 1:steps
-    dP = Plvs(i) - Paos(i);
-    Ql = Qas(i);
-    
-    if dP >= 0 && Ql > 0;
-        Rvest(j) = dP/Ql; 
-        j = j + 1;
-    end
-end
-
-Rvm = mean(Rvest)
-figure;
-hold on;
-plot(Rvest,'k.');
-plot(Rvm*ones(size(Rvest)),'r');
-hold off;
-
+linkaxes(ax,'x');
