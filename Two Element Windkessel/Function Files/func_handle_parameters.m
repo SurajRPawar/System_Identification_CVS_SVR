@@ -46,10 +46,13 @@ v2 : Suraj R Pawar, 6-10-2020
     - Clean up comments describing new cases
 v3 : Suraj R Pawar, 6-11-2020
     - Add counts to the inputs so num_states doesn't have to be hardcoded
-%}
 v4 : Suraj R Pawar, 6-14-2020
     - Add case which handles only Cs estimation
     - Add variable of num_params that decides number of rows in paramdots
+%}
+v5 : Suraj R Pawar, 6-22-2020
+    - Added case for Cs and Rv estimation
+    - Added other cases that were used while experimentation
 %}
         
     switch version
@@ -181,7 +184,144 @@ v4 : Suraj R Pawar, 6-14-2020
                 getparams.A = 0;         
                 getparams.Rv = 0;
                 paramdots = zeros(num_params,1);
-            end              
+            end     
+        case 7
+            % Estimation of A, Rv and Pr
+            num_params = 3;
+            getparams.Rsvr = parameters(1);
+            getparams.Cs = parameters(2);
+            %getparams.Pr = parameters(3);            
+            getparams.HR = parameters(6);
+            getparams.tvc = parameters(7);
+            getparams.tc = parameters(8);
+            getparams.B = parameters(10);
+            getparams.E = parameters(11);
+            if nargin == 4
+                % Sigma points passed
+                num_states = counts(1);
+                getparams.A = sigmas((num_states - 2),:);   
+                getparams.Rv = sigmas((num_states- 1),:);
+                getparams.Pr = sigmas((num_states),:);   
+                paramdots = zeros(num_params,size(sigmas,2));
+            elseif nargin == 5
+                % Last best estimate of the augmented state passed
+                getparams.A = x(3);     
+                getparams.Rv = x(4);     
+                getparams.Pr = x(5);
+                paramdots = zeros(num_params,1);
+            elseif nargin == 2
+                % UKF has not yet begun
+                getparams.A = 0;         
+                getparams.Rv = 0;
+                getparams.Pr = 0;
+                paramdots = zeros(num_params,1);
+            end       
+        case 8
+            % Estimation of B, Emax and Rv
+            num_params = 3;  % Number of parameters being estimated in this case            
+            getparams.Rsvr = parameters(1);
+            getparams.Cs = parameters(2);
+            getparams.Pr = parameters(3);
+            %getparams.Rv = parameters(4);
+            getparams.HR = parameters(6);
+            getparams.tvc = parameters(7);
+            getparams.tc = parameters(8);
+            getparams.A = parameters(9);
+            if nargin == 4
+                % Sigma points passed
+                num_states = counts(1);                
+                getparams.B = sigmas((num_states - 2),:);
+                getparams.E = sigmas((num_states - 1),:);
+                getparams.Rv = sigmas((num_states),:);
+                paramdots = zeros(num_params,size(sigmas,2));
+            elseif nargin == 5
+                % Last best estimate of the augmented state passed
+                getparams.B = x(3);
+                getparams.E = x(4);
+                getparams.Rv = x(5);
+                paramdots = zeros(num_params,1);
+            elseif nargin == 2
+                % UKF has not yet begun
+                getparams.B = 0;
+                getparams.E = 0;
+                getparams.Rv = 0;
+                paramdots = zeros(num_params,1);
+            end
+        case 9
+            % Estimation of B, Emax and Pr
+            num_params = 3;  % Number of parameters being estimated in this case            
+            getparams.Rsvr = parameters(1);
+            getparams.Cs = parameters(2);
+            %getparams.Pr = parameters(3);
+            getparams.Rv = parameters(4);
+            getparams.HR = parameters(6);
+            getparams.tvc = parameters(7);
+            getparams.tc = parameters(8);
+            getparams.A = parameters(9);
+            if nargin == 4
+                % Sigma points passed
+                num_states = counts(1);                
+                getparams.B = sigmas((num_states - 2),:);
+                getparams.E = sigmas((num_states - 1),:);
+                getparams.Pr = sigmas((num_states),:);
+                paramdots = zeros(num_params,size(sigmas,2));
+            elseif nargin == 5
+                % Last best estimate of the augmented state passed
+                getparams.B = x(3);
+                getparams.E = x(4);
+                getparams.Pr = x(5);
+                paramdots = zeros(num_params,1);
+            elseif nargin == 2
+                % UKF has not yet begun
+                getparams.B = 0;
+                getparams.E = 0;
+                getparams.Pr = 0;
+                paramdots = zeros(num_params,1);
+            end
+        case 10
+            % Estimation of A, E, Emax and Rv
+            num_params = 4;
+            getparams.Rsvr = parameters(1);
+            getparams.Cs = parameters(2);
+            getparams.Pr = parameters(3);
+            %getparams.Rv = parameters(4);
+            getparams.HR = parameters(6);
+            getparams.tvc = parameters(7);
+            getparams.tc = parameters(8);            
+            %getparams.B = parameters(10);
+            %getparams.E = parameters(11);
+            if nargin == 4
+                % Sigma points passed
+                num_states = counts(1);
+                getparams.A = sigmas((num_states - 3),:);   
+                getparams.B = sigmas((num_states - 2),:);   
+                getparams.E = sigmas((num_states -1),:);   
+                getparams.Rv = sigmas((num_states),:);   
+                paramdots = zeros(num_params,size(sigmas,2));
+            elseif nargin == 5
+                % Last best estimate of the augmented state passed
+                getparams.A = x(3);     
+                getparams.B = x(4);     
+                getparams.E = x(5);     
+                getparams.Rv = x(6);     
+                paramdots = zeros(num_params,1);
+            elseif nargin == 2
+                % UKF has not yet begun
+                getparams.A = 0; 
+                getparams.B = 0; 
+                getparams.E = 0; 
+                getparams.Rv = 0;
+                paramdots = zeros(num_params,1);
+            end     
+        case 11
+            % Estimation of Cs and Rv
+            num_states = counts(1);
+            num_params = 2;
+            getparams.Rsvr = parameters(1);
+            getparams.Pr = parameters(3);
+            getparams.Cs = sigmas((num_states - 1),:);
+            getparams.Rv = sigmas((num_states),:);
+            paramdots = zeros(num_params,size(sigmas,2));
     end
        
 end
