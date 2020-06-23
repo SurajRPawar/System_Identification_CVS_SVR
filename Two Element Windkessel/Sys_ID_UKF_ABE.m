@@ -23,9 +23,7 @@ all beats.
 1. We assume that we know Pr, SVR, Cao, Rv
 2. SVR can be estimated using the formula
         SVR = (MAP - CVP) / CO
-3. We could try to set a value of Rv from deltaP / CO
-4. Pr and Cao may be estimable through the systemic circulation side
-   estimation
+3. We estimate the value of Rv from Pao differential equation
 
 -------------------------------- Verisons ---------------------------------
 %{
@@ -33,9 +31,12 @@ v1 : 6-10-2020, Suraj R Pawar
     - Initialize
 v2 : Suraj R Pawar, 6-11-2020
     - Tested after adding 'counts' variable to func_handle_parameters
-%}
 v3 : Suraj R Pawar, 6-12-2020
     - Added Qafilter structure containing filtered signal and thresholds
+%}
+v4 : Suraj R Pawar, 6-22-2020
+    - Experiment with Healthy computational model data
+    - Switched to a square root law for the aortic flow
 %}
 
 close all; clear all; clc;
@@ -44,27 +45,28 @@ include_us;
 %% User Inputs
     % Initial Conditions for B, E estimator
     V0_guess_be = 5;                       % Guess for unstressed blood volume
-    Vlv0_be = 250;                         % Initial left ventricle volume (mL)
-    Ps0_be = 70;                          % Initial systemic pressure (mmHg)
+    Vlv0_be = 100;                         % Initial left ventricle volume (mL)
+    Ps0_be = 100;                          % Initial systemic pressure (mmHg)
     
     % Initial conditions for A estimator
-    V0_guess_a = 5;
-    Vlv0_a = 250;
-    Ps0_a = 90;
+    V0_guess_a =5;
+    Vlv0_a = Vlv0_be;
+    Ps0_a = 110;
     
-    Pr_deviation = 0;                  % Percentage deviation from true Pr
-    Rv_deviation = 0;                  % Percentage deviation from true Rv
+    Pr_deviation = 0;                       % Percentage deviation from true Pr
+    Rv_deviation = 0;                       % Percentage deviation from true Rv
     
     A0 = 0.01;    
     B0 = 0.01;
-    Emax0 = 0.1;
+    Emax0 = 1;
     
-    p0_states = diag([250, 50]);      % Initial error covariance of states Vbar and Ps
-    p0_be = diag([1e-3, 10]);                        % Initial error covariances for parameters B, Emax
-    p0_a = [1e-1];                                  % Initial error covariance for parameter A
+    p0_states = diag([1e2, 5]);             % Initial error covariance of states Vbar and Ps
+    p0_be = diag([1e-3, 50]);               % Initial error covariances for parameters B, Emax
+    p0_a = [1e-1];                          % Initial error covariance for parameter A
     
-    param_noise_std_be = [1e-10; 1e-10];  % White noise standard deviation for parameters [B, Emax]
-    param_noise_std_a = [1e-10];          % White noise standard deviation for parameters [A]
+    data.process_noise_std = [1; 5];        % Use only if you want to override default noise terms
+    param_noise_std_be = [1e-10; 1e-10];    % White noise standard deviation for parameters [B, Emax]
+    param_noise_std_a = [1e-10];            % White noise standard deviation for parameters [A]
     
     % UKF parameters (common for all parameter estimators)
     alpha = 1e-3;
@@ -73,18 +75,19 @@ include_us;
     
     % What is the version of this experiment ? 
     experiment_versions;               % Contains description of versions  
-        
-    waitflag = 1;
+    
+    % Show GUI progress bar or not
+    waitflag = 0;
     
 %% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
       
     % True value of parameters
-    Cs_true = 0.869; %data.parameters(1);
+    Cs_true = 1.29; %data.parameters(1); %1.355; %
     Rsvr_true = data.parameters(2);
-    Pr_true = 1.353; %(1 + Pr_deviation/100)*data.parameters(3);
-    Ra_true = 0.0021; %(1 + Rv_deviation/100)*data.parameters(4);
-    Rm_true = 0.0021; %(1 + Rv_deviation/100)*data.parameters(5);
+    Pr_true = 2; %(1 + Pr_deviation/100)*data.parameters(3); % 0.668; %
+    Ra_true = 0.005; %(1 + Rv_deviation/100)*data.parameters(4);
+    Rm_true = 0.005; %(1 + Rv_deviation/100)*data.parameters(5);
     A_true = data.parameters(6);    
     B_true = data.parameters(7);
     E_true = data.parameters(8);
@@ -97,26 +100,26 @@ include_us;
 
     % Filter Qa
     dt_original = data.dt;
-    Fs = 1/dt_original;                         % Sampling frequency (Hz)
+    Fs = 1/dt_original;                             % Sampling frequency (Hz)
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 50, Fs);
+    Qa_filtered = lowpass(Qa_original, 5, Fs);
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.0001;
-    tf = data.num_beats*data.parameters(11);   % Final time for simulation
-    t_original = [0 : dt_original : tf];       % Time vector from measurement file
-    t = [0: dt : tf];                          % Time vector with 1 ms time steps    
+    dt = 0.001;
+    tf = data.num_beats*data.parameters(11);        % Final time for simulation
+    t_original = [0 : dt_original : tf];            % Time vector from measurement file
+    t = [0: dt : tf];                               % Time vector with 1 ms time steps    
     Ps_original = data.Ps;    
     Plv_original = data.Plv;
     Qvad_original = data.Qvad;    
     Vbar_original = data.x(1,:) - V0_true;    
     
-    Plv = interp1(t_original, Plv_original, t);    
-    Pao = interp1(t_original, Ps_original, t);
-    Qa = interp1(t_original, Qa_original, t);
-    Qa_filtered = interp1(t_original, Qa_filtered, t);
-    Qvad = interp1(t_original, Qvad_original, t);
-    Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0
+    Plv = interp1(t_original, Plv_original, t, 'linear', 'extrap');
+    Pao = interp1(t_original, Ps_original, t, 'linear', 'extrap');
+    Qa = interp1(t_original, Qa_original, t, 'linear', 'extrap');
+    Qa_filtered = interp1(t_original, Qa_filtered, t, 'linear', 'extrap');
+    Qvad = interp1(t_original, Qvad_original, t, 'linear', 'extrap');
+    Vbar = interp1(t_original, Vbar_original, t, 'linear', 'extrap');   % Vbar = Vlv - V0
     
     y = [Plv; Pao; Qa];    
     
@@ -132,13 +135,14 @@ include_us;
     Euler integration. When we do convert it to Ito's form inside the
     function, the variance of the Brownian motion is q*dt
     %}
-    q_be = diag([data.process_noise_std.^2; param_noise_std_be.^2]);  % Process noise covariance for B, E estimator
-    q_a = diag([data.process_noise_std.^2; param_noise_std_a.^2]);  % Process noise covariance for A estimator
     
-    r = diag(data.meas_noise_std.^2);                           % Measurement noise covariance
+    q_be = diag([data.process_noise_std.^2; param_noise_std_be.^2]);    % Process noise covariance for B, E estimator
+    q_a = diag([data.process_noise_std.^2; param_noise_std_a.^2]);      % Process noise covariance for A estimator
+    
+    r = diag(data.meas_noise_std.^2);                                   % Measurement noise covariance
     ukf_params = [alpha; kappa; beta];
     
-    x0_be = [Vlv0_be - V0_guess_be; Ps0_be];                     % First state is Vbar = Vlv - V0
+    x0_be = [Vlv0_be - V0_guess_be; Ps0_be];                            % First state is Vbar = Vlv - V0
     x0_a = [Vlv0_a - V0_guess_a; Ps0_a];
     
     theta0_be = [B0; Emax0];
@@ -156,6 +160,8 @@ include_us;
     A_ukf = [];
     B_ukf = [];
     Emax_ukf = [];
+    Qa_ukf_a = [];
+    Qa_ukf_be = [];
     
     if waitflag == 1 
         f = waitbar(0,'UKF'); 
@@ -188,8 +194,7 @@ include_us;
             if i ~= 1
                 p_be = squeeze(Paug_be([3:4],[3:4],end));   % Last error covariance of parameters
                 parametersl(9) = xhat_a(3,end);             % Last good estimate of A 
-                theta0l = xhat_be([3:4],end);               % Last good estimate of B, Emax
-                %p0l_states = p0_states;
+                theta0l = xhat_be([3:4],end);               % Last good estimate of B, Emax                
                 p0l_states = squeeze(Paug_a([1:2],[1:2],end));                
                 x0_be = xhat_a([1:2],end);
             else
@@ -199,7 +204,7 @@ include_us;
                 p0l_states = p0_states;                
             end
             version = 1;
-            p0l = blkdiag(p0l_states, p_be);    % Reset P for states
+            p0l = blkdiag(p0l_states, p_be);                % Reset P for states
             [xhat_be, yhat_be, Paug_be, t_be] = func_TwoElem_SysID_UKF_BE_Ejection(tl, yl, Qvadl, x0_be, theta0l, p0l,...
                                                                        q_be, r, parametersl, ukf_params,...
                                                                        version, Qafiltstruct);
@@ -214,8 +219,7 @@ include_us;
                 
             end
             x0_a = xhat_be([1:2],end);
-            p0l_states = squeeze(Paug_be([1:2],[1:2],end));
-            %p0l_states = p0_states;
+            p0l_states = squeeze(Paug_be([1:2],[1:2],end));            
             parametersl(10) = xhat_be(3,end);
             parametersl(11) = xhat_be(4,end);
             version = 2;
@@ -236,7 +240,10 @@ include_us;
                                   
             A_ukf = [A_ukf, xhat_a(3,:)];
             B_ukf = [B_ukf, xhat_be(3,:)];
-            Emax_ukf = [Emax_ukf, xhat_be(4,:)];            
+            Emax_ukf = [Emax_ukf, xhat_be(4,:)];    
+            
+            Qa_ukf_a = [Qa_ukf_a, yhat_a(3,:)];
+            Qa_ukf_be = [Qa_ukf_be, yhat_be(3,:)];
     end
     
     if waitflag == 1

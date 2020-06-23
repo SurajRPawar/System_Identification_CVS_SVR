@@ -79,10 +79,13 @@ v7 : Suraj R Pawar, 6-12-2020
     determining the stage of the cardiac cycle.
 v8 : Suraj R Pawar, 6-14-2020
     - Fixed number of arguments being checked to set waitflag
-%}
 v9 : Suraj R Pawar, 6-15-2020
     - Moved dt calculation before the signal processing block that
     determines the stages.
+%}
+v10 : Suraj R Pawar, 6-22-2020
+    - Removed the update function line. Estimated measurements are left as
+    is.
 %}
     
     %% Argument handling
@@ -308,7 +311,8 @@ v9 : Suraj R Pawar, 6-15-2020
                 
             % Update measurements
                 stage = 2;  % Ejection
-                yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, stage, version);                                                                     
+                yhat(:,i) = mean_prior_meas;
+                %yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, stage, version);                                                                     
         end
  
         if waitflag == 1

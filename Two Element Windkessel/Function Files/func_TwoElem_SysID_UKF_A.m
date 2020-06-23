@@ -78,9 +78,12 @@ v6 : Suraj R Pawar, 6-12-2020
     determining the stage of the cardiac cycle.
 v7 : Suraj R Pawar, 6-14-2020
     - Fixed number of arguments being checked to set waitflag
-%}
 v8 : Suraj R Pawar, 6-15-2020
     - Removed duplicate line that was setting dt
+%}
+v9 : Suraj R Pawar, 6-22-2020
+    - Commented out update measurements line
+    - Using estimated measurements as is
 %}
     
     %% Argument handling
@@ -100,8 +103,7 @@ v8 : Suraj R Pawar, 6-15-2020
         steps = length(t);  % Total number of samples in measurement signals
         Plv = y(1,:);
         Pao = y(2,:);
-        Qa = y(3,:); 
-        Pr = getparams.Pr;
+        Qa = y(3,:);         
                 
         tc = getparams.tc;  % Used for calculating normalized time (s)        
         j = 1;              % To index and store measurements in selected windows        
@@ -346,7 +348,8 @@ v8 : Suraj R Pawar, 6-15-2020
                 
             % Update measurements
                 stage = 3;  % A estimation happens using filling state equations
-                yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, stage, version);                                                                  
+                yhat(:,i) = mean_prior_meas;
+                %yhat(:,i) = func_update_measurements(t(i), mean_post, mean_prior_meas, parameters, stage, version);                                                                  
         end
         
         if waitflag == 1
