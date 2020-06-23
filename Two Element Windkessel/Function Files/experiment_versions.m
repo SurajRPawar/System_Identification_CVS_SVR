@@ -21,4 +21,10 @@ ABE version : No numerical version needed. The code uses version 1 and
 version 4 : Estimation of Cs, Pr during all stages of CVS
 version 5 : Estimation of only Cs during all stages of CVS
 version 6 : Estimation of A and Rv during filling stage
+version 7 : Estimation of A, Rv and Pr during filling stage
+version 8 : Estimation of B, Emax and Rv during isovolumic contraction and
+            ejection
+version 9 : Estimation of B, Emax and Pr during ejection
+version 10 : Estimation of A, B, Emax and Rv during filling
+version 11 : Estimation of Cs and Rv
 %}

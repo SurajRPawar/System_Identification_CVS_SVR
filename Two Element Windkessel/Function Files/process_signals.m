@@ -23,7 +23,7 @@ v3 : Suraj R Pawar, 6-23-2020
 clear all; close all; clc;
 
 %% Load noisy measurements
-data = noisy_twoelem_data('noisy_data_comp_hf.mat');
+data = noisy_twoelem_data('sync_1_1_SysID.mat');
 Plv = data.Plv;
 Pao = data.Ps;
 Qa = data.Qa;
@@ -90,9 +90,9 @@ xlim([0 50]);
 %% Lowpass filtering
 
 % Cutoff frequencies in Hz
-wpass_plv = 5;
-wpass_pao = 5;
-wpass_qa = 5;
+wpass_plv = 8;
+wpass_pao = 8;
+wpass_qa = 8;
 
 % Lowpass filtering
 Plvf = lowpass(Plv, wpass_plv, Fs, 'ImpulseResponse','iir','Steepness',0.8);

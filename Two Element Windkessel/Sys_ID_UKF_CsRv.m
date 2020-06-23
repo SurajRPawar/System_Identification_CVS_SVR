@@ -21,15 +21,23 @@ v1 : 6-22-2020, Suraj R Pawar
 close all; clear all; clc;
 include_us;
 
-%% User Inputs
-    % Initial Conditions    
-    Ps0 = 100;                          % Initial systemic pressure (mmHg)        
+%% ---------------------- User Inputs -------------------------------------
+    % Data file to load
+    datafilename = 'sync_1_1_SysID.mat';
     
+    % Set known values
+    Pr_true = 12;                        % (mmHg)
+    
+    % Initial Conditions    
+    Ps0 = 65;                          % Initial systemic pressure (mmHg)            
     Cs0 = 1;                            % Initial guess for systemic compliance (mL/mmHg)    
     Rv0 = 0.001;    
     
-    p0 = diag([25, 1, 1e-5]);           % Initial error covariance
+    % Initial covariances
+    p0 = diag([5, 5, 1e-5]);           % Initial error covariance
         
+    % Process noise terms
+    data.process_noise_std(2) = 5;      % If you want to override default value
     param_noise_std = 1*[1e-10; 1e-10]; % White noise standard deviation for parameters [A]
     
     % UKF parameters
@@ -41,13 +49,15 @@ include_us;
     experiment_versions;                % Contains description of versions
     version = 11;
         
-%% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
+    % GUI progress bar
+    waitflag = 0;
+    
+%% ---------------------- Measurements and parameters ---------------------
+    data = noisy_twoelem_data(datafilename);      % Load noisy two element data using this function
       
     % True value of parameters
     Cs_true = data.parameters(1);
-    Rsvr_true = data.parameters(2);
-    Pr_true = 3; %data.parameters(3);
+    Rsvr_true = data.parameters(2);    
     Ra_true = data.parameters(4);
     Rm_true = data.parameters(5);
     A_true = data.parameters(6);    
@@ -56,13 +66,13 @@ include_us;
     V0_true = data.parameters(9);
     HR_true = data.parameters(10);
     t_c_true = data.parameters(11);
-    t_vc_true = data.parameters(12);    
+    t_vc_true = 0.6;%data.parameters(12);    
     parameters = [Rsvr_true; Cs_true; Pr_true; Ra_true; Rm_true; HR_true; t_vc_true; t_c_true;...
                   A_true; B_true; E_true; V0_true]; % To be passed to UKF       
     
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.001;
+    dt = 0.0001;
     dt_original = data.dt;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
@@ -87,31 +97,29 @@ include_us;
     model. We need to convert this into Ito's form and integrate using
     Euler integration. When we do convert it to Ito's form inside the
     function, the variance of the Brownian motion is q*dt
-    %}
-    Ps_noise_std = 5;
-    %Ps_noise_std = data.process_noise_std(2);
+    %}        
     meas_noise_std = data.meas_noise_std(2:3);
+    Ps_noise_std = data.process_noise_std(2);
     q = diag([Ps_noise_std.^2; param_noise_std.^2]);  % Process noise covariance
     r = diag(meas_noise_std.^2);                      % Measurement noise covariance
     ukf_params = [alpha; kappa; beta];
     x0 = [Ps0];                                       
     theta0 = [Cs0; Rv0];
     
-%% UKF 
-    fprintf('Beginning UKF estimation \n'); tic;
-    waitflag = 0;
+%% ----------------------------- UKF --------------------------------------
+    fprintf('Beginning UKF estimation \n'); tic;    
     [xhat, yhat, Paug] = func_TwoElem_SysID_UKF_CsRv(t, y, u, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
                                                                    version, waitflag);
     fprintf('UKF estimation finished in %.2f seconds\n', toc);
 
-%% Console output
+%% -------------------------- Console output ------------------------------
     Csmean = mean(xhat(2,[end-50:end]));   
     Rvmean = mean(xhat(3,[end-50:end]));   
     fprintf('Estimated Cs : %.3f mL/mmHg\n', Csmean);    
     fprintf('Estimated Rv : %.3f mmHg/mL/s\n', Rvmean);   
     
-%% Figures
+%% ------------------------------ Figures ---------------------------------
     figure;   
     numrows = 3;
     numcols = 1;

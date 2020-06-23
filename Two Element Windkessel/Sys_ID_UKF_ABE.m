@@ -42,28 +42,40 @@ v4 : Suraj R Pawar, 6-22-2020
 close all; clear all; clc;
 include_us;
 
-%% User Inputs
+%% ----------------------- User Inputs ------------------------------------
+
+    % Data file to load
+    datafilename = 'sync_1_1_SysID.mat';
+    
+    % Set values for Cs, Rv and Pr
+    Cs_true = 1.520; % (mL/mmHg)
+    Pr_true = 14;    % (mmHg)
+    Rv = 0.006;      % (mmHg/mL/s)
+    
+    % Set Qa filtering parameters and thresholds
+    Qalowpassf = 8;    % Low pass cutoff frequency (Hz)
+    Qaupper = 200;      % Where to set Qcheck flag to true
+    Qalower = 0;        % When to stop marking ejection
+    
     % Initial Conditions for B, E estimator
-    V0_guess_be = 5;                       % Guess for unstressed blood volume
-    Vlv0_be = 100;                         % Initial left ventricle volume (mL)
-    Ps0_be = 100;                          % Initial systemic pressure (mmHg)
+    V0_guess_be = 45;                       % Guess for unstressed blood volume
+    Vlv0_be = 45;                         % Initial left ventricle volume (mL)
+    Ps0_be = 65;                           % Initial systemic pressure (mmHg)
+    B0 = 0.1;
+    Emax0 = 10;
     
     % Initial conditions for A estimator
-    V0_guess_a =5;
+    V0_guess_a = 45;
     Vlv0_a = Vlv0_be;
-    Ps0_a = 110;
-    
-    Pr_deviation = 0;                       % Percentage deviation from true Pr
-    Rv_deviation = 0;                       % Percentage deviation from true Rv
-    
+    Ps0_a = 97;            
     A0 = 0.01;    
-    B0 = 0.01;
-    Emax0 = 1;
     
-    p0_states = diag([1e2, 5]);             % Initial error covariance of states Vbar and Ps
-    p0_be = diag([1e-3, 50]);               % Initial error covariances for parameters B, Emax
-    p0_a = [1e-1];                          % Initial error covariance for parameter A
+    % Initial covariances
+    p0_states = diag([1, 5]);               % Initial error covariance of states Vbar and Ps
+    p0_be = diag([1e-3, 5]);                % Initial error covariances for parameters B, Emax
+    p0_a = [5];                             % Initial error covariance for parameter A
     
+    % Process noise terms
     data.process_noise_std = [1; 5];        % Use only if you want to override default noise terms
     param_noise_std_be = [1e-10; 1e-10];    % White noise standard deviation for parameters [B, Emax]
     param_noise_std_a = [1e-10];            % White noise standard deviation for parameters [A]
@@ -79,22 +91,21 @@ include_us;
     % Show GUI progress bar or not
     waitflag = 0;
     
-%% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
+%% ------------------ Measurements and parameters -------------------------
+    data = noisy_twoelem_data(datafilename);      % Load noisy two element data using this function
       
     % True value of parameters
-    Cs_true = 1.29; %data.parameters(1); %1.355; %
-    Rsvr_true = data.parameters(2);
-    Pr_true = 2; %(1 + Pr_deviation/100)*data.parameters(3); % 0.668; %
-    Ra_true = 0.005; %(1 + Rv_deviation/100)*data.parameters(4);
-    Rm_true = 0.005; %(1 + Rv_deviation/100)*data.parameters(5);
+    
+    Rsvr_true = data.parameters(2);    
+    Ra_true = Rv;
+    Rm_true = Rv;
     A_true = data.parameters(6);    
     B_true = data.parameters(7);
     E_true = data.parameters(8);
     V0_true = data.parameters(9);
     HR_true = data.parameters(10);
     t_c_true = data.parameters(11);
-    t_vc_true = data.parameters(12);    
+    t_vc_true = 0.6; %data.parameters(12);    
     parameters = [Rsvr_true; Cs_true; Pr_true; Ra_true; Rm_true; HR_true; t_vc_true; t_c_true;...
                   A_true; B_true; E_true; V0_true]; % To be passed to UKF       
 
@@ -102,7 +113,8 @@ include_us;
     dt_original = data.dt;
     Fs = 1/dt_original;                             % Sampling frequency (Hz)
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 5, Fs);
+    Qa_filtered = lowpass(Qa_original, Qalowpassf, Fs,...
+                          'ImpulseResponse','iir','Steepness',0.9);
     
     % Interpolate all measurements to 1ms timing    
     dt = 0.001;
@@ -124,8 +136,8 @@ include_us;
     y = [Plv; Pao; Qa];    
     
     Qafiltstruct.signal = Qa_filtered;
-    Qafiltstruct.upper_threshold = 100;
-    Qafiltstruct.lower_threshold = 0;
+    Qafiltstruct.upper_threshold = Qaupper;
+    Qafiltstruct.lower_threshold = Qalower;
     
     % Noise and parameters for UKF
     %{
@@ -148,7 +160,7 @@ include_us;
     theta0_be = [B0; Emax0];
     theta0_a = [A0];
     
-%% UKF 
+%% -------------------------------- UKF -----------------------------------
     fprintf('Beginning UKF estimation \n'); tic;    
     parametersl = parameters;
     tbe_ukf = [];
@@ -252,7 +264,7 @@ include_us;
         
     fprintf('UKF estimation finished in %.2f seconds\n', toc);    
     
-%% Calculate accuracies
+%% -------------------- Calculate accuracies ------------------------------
     B_final_est = mean(B_ukf(end-1000:end));
     A_final_est = mean(A_ukf(end-1000:end));
     Emax_final_est = mean(Emax_ukf(end-1000:end));
@@ -267,7 +279,7 @@ include_us;
     fprintf('B: %.3f, accuracy: %.2f%% \n', B_final_est, B_acc);
     fprintf('Emax: %.3f, accuracy: %.2f%% \n', Emax_final_est, Emax_acc);
     
-%% Figures
+%% --------------------------- Figures ------------------------------------
     figure;       
     default_marker = 3;
     ax = [];

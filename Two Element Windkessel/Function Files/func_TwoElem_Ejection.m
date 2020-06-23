@@ -46,9 +46,11 @@ v2 : Suraj R Pawar, 5-24-2020
 v3 : Suraj R Pawar, 5-28-2020
     - Add version mechanism to extract known parameters and set dynamic
     equations for estimated parameters based on the experiment being run
-%}
 v4 : Suraj R Pawar, 6-11-2020
     - Passing variable 'counts' to func_handle_parameters
+%}
+v5 : Suraj R Pawar, 6-22-2020
+    - Switched to square root law for valve resistance
 %}
 
     % Get known / estimated parameters depending on version
@@ -84,9 +86,10 @@ v4 : Suraj R Pawar, 6-11-2020
         Plv = func_Plv(e_n, A, B, Emax, Vbar);        
         
     % Valve flow
-        Qa = (1./Rv).*(Plv - Ps);
-        % Do not let Qa be negative
-        if any(Qa <= 0) Qa(find(Qa <= 0)) = 0; end
+        
+        dPsys = Plv - Ps;       
+        if any(dPsys < 0) dPsys(find(dPsys < 0)) = 0; end        
+        Qa = (1./Rv).*sqrt(dPsys);                
         
     % State Equations for Ejection
         Vbardot = -Qvad - Qa;

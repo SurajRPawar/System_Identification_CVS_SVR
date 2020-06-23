@@ -32,10 +32,12 @@ est_meas     : Estimated measurements
 %{
 v1 : Suraj R Pawar, 5-24-2020
      - Initialize
-%}
 v2 : Suraj R Pawar, 6-11-2020
     - Send counts input to func_handle_parameters
     - This function will use counts to determine the number of states
+%}
+v3 : Suraj R Pawar, 6-22-2020
+    - Switched to square root law for mitral valve flow
 %}
 
     % Known parameters
@@ -71,11 +73,11 @@ v2 : Suraj R Pawar, 6-11-2020
         Plv = func_Plv(e_n, A, B, Emax, Vbar);        
         
     % Valve flow
-        Qa = 0;        
-        Qm = (1./Rv).*(Pr - Plv);        
+        Qa = 0;                
         
-        % Do not let Qa be negative
-        if any(Qm <= 0) Qm(find(Qm <= 0)) = 0; end
+        dPpul = Pr - Plv;
+        if any(dPpul < 0) dPpul(find(dPpul < 0)) = 0; end        
+        Qm = (1./Rv).*sqrt(dPpul);                
         
     % State Equations for Filling
         Vbardot = -Qvad + Qm;
