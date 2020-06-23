@@ -50,15 +50,46 @@ stage             : Stage of the cardiac cycle.
                     2 = Ejection
                     3 = Filling
                     1 = Isovolumic expansion / contraction
+t                 : Time vector is formed manually
 
 ---------------------------- Version History ------------------------------
+%{
 v1 : 5-22-2020, Suraj R Pawar
      Initialize function file
+%}
+v2 : Suraj R Pawar, 6-23-2020
+    - Function also creates time vector that can be used for simulations
+    - Performs a check to make sure data signals and time vector are of
+    same length
 %} 
 
     arguments
         filename = 'Noisy_TwoElem_Data_Long.mat';
     end
     
-    data = load(filename);
+    data = load(filename);   
+    
+    % Form time vector and make data the same length as time vector    
+    num_beats = data.num_beats;
+    dt = data.dt;
+    tc = data.parameters(11);
+    tf = tc*num_beats;
+    t = [0:dt:tf];
+    
+    diff_numel = numel(data.Plv) - numel(t);
+    
+    if diff_numel > 0
+        % More data samples than time stamps
+        data.x = data.x(:,[1 : end - diff_numel]);
+        data.Plv = data.Plv(:,[1 : end - diff_numel]);
+        data.Ps = data.Ps(:,[1 : end - diff_numel]);
+        data.Qa = data.Qa(:,[1 : end - diff_numel]);
+        data.Qvad = data.Qvad(:,[1 : end - diff_numel]);
+        data.stage = data.stage(:,[1 : end - diff_numel]);
+    elseif diff_numel < 0
+        % More time stamps than data samples
+        t = t(1 : end - diff_numel);
+    end
+    
+    data.t = t;
 end
