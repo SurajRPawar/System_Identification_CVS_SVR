@@ -106,7 +106,7 @@ v10 : Suraj R Pawar, 6-22-2020
         dt = t(2) - t(1);   % Time vector : [t0 : dt : tf]
         Plv = y(1,:);
         Pao = y(2,:);
-        Qa = y(3,:);         
+        Qa = y(3,:);                       
         
         marking = 0;        % Indicates when marking is in progress   
         tc = getparams.tc;  % Used for calculating normalized time (s)
@@ -202,7 +202,7 @@ v10 : Suraj R Pawar, 6-22-2020
         % Re-organize variables
         t = tselect;
         Qvad = Qvad_ejection;
-        y = [Plv_ejection; Pao_ejection; Qa_ejection];
+        y = [Plv_ejection; Pao_ejection; Qa_ejection];        
         
     %% Variables and Initial conditions    
         % Count everything                        

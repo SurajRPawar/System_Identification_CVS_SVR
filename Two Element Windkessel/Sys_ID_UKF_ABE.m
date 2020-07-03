@@ -133,7 +133,7 @@ include_us;
     Qvad = interp1(t_original, Qvad_original, t, 'linear', 'extrap');
     Vbar = interp1(t_original, Vbar_original, t, 'linear', 'extrap');   % Vbar = Vlv - V0
     
-    y = [Plv; Pao; Qa];    
+    y = [Plv; Pao; Qa];          
     
     Qafiltstruct.signal = Qa_filtered;
     Qafiltstruct.upper_threshold = Qaupper;

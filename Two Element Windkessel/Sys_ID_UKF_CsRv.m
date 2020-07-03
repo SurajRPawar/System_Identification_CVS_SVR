@@ -37,7 +37,7 @@ include_us;
     p0 = diag([5, 5, 1e-5]);           % Initial error covariance
         
     % Process noise terms
-    data.process_noise_std(2) = 5;      % If you want to override default value
+    data.process_noise_std(2) = 1;      % If you want to override default value
     param_noise_std = 1*[1e-10; 1e-10]; % White noise standard deviation for parameters [A]
     
     % UKF parameters

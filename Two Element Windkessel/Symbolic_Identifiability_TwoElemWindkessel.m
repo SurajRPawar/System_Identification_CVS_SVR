@@ -26,6 +26,7 @@
 %==========================================================================
 
 clear all; close all; clc;
+include_us;
 
 %% Define symbols
 
@@ -40,7 +41,8 @@ clear all; close all; clc;
         x = [Vlv; Pao];                                 % State vector
         theta = [A; B; Emax; Rv; Cao; Pr];              % Unknown parameters        
         Plv = (1-en)*A*(exp(B*Vlv) - 1) + en*Emax*Vlv;  % Equation for Plv
-        Qa = (Plv - Pao)/Rv;                            % Equation for aortic flow
+        Qa = (sqrt(Plv - Pao))/Rv;                      % Equation for aortic flow
+        Qm = (sqrt(Pr - Plv))/Rv;                       % Equation for mitral valve flow
         y = [Plv; Pao; Qa];                             % Measurements. Qa will be removed for iso and filling stages       
     %----------------------------------------------------------------------
     
@@ -50,46 +52,46 @@ clear all; close all; clc;
    
     %% Ejection
     
-        f_ejection = [-Qvad - (Plv - Pao)/Rv;
-                       (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr) + (Plv - Pao)/Rv);
+        f_ejection = [-Qvad - Qa;
+                       (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr) + Qa);
                        param_dynamics];
-        %y_ejection = y;
-        y_ejection = Plv - Pao;
-%         [r_ejection, ~] = func_NLO(x_aug,f_ejection, y_ejection);        
+        y_ejection = y;
+        %y_ejection = Plv - Pao;
+        [r_ejection, ~] = func_NLO(x_aug,f_ejection, y_ejection);        
         
     %% Isovolumic 
         f_iso = [-Qvad;
                   (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
                   param_dynamics];
-        %y_iso = y(1:2);
-        y_iso = Plv - Pao;
+        y_iso = [y(1:2); 0];
+        %y_iso = Plv - Pao;
         
-%         [r_iso, ~] = func_NLO(x_aug,f_iso, y_iso);
+        [r_iso, ~] = func_NLO(x_aug,f_iso, y_iso);
             
     %% Filling
-        f_filling = [-Qvad + (Pr - Plv)/Rv;
+        f_filling = [-Qvad + Qm;
                       (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
                       param_dynamics];
-        %y_filling = y(1:2);
-        y_filling = Plv - Pao;
-%         [r_filling, ~] = func_NLO(x_aug,f_filling, y_filling);           
+        y_filling = [y(1:2); 0];
+        %y_filling = Plv - Pao;
+        [r_filling, ~] = func_NLO(x_aug,f_filling, y_filling);           
         
     %% Console Output
-%         fprintf('=== Nonlinear observability (Hermann and Krener) =====\n\n');
-%         fprintf('EJECTION \n');
-%         fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
-%         fprintf('Nonlinear observability rank: %d \n', r_ejection);
-%         fprintf('\n\n');
-%         
-%         fprintf('ISOVOLUMIC \n');
-%         fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
-%         fprintf('Nonlinear observability rank: %d \n', r_iso);
-%         fprintf('\n\n');
-%         
-%         fprintf('FILLING \n');
-%         fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
-%         fprintf('Nonlinear observability rank: %d \n', r_filling);
-%         fprintf('\n\n');
+        fprintf('=== Nonlinear observability (Hermann and Krener) =====\n\n');
+        fprintf('EJECTION \n');
+        fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
+        fprintf('Nonlinear observability rank: %d \n', r_ejection);
+        fprintf('\n\n');
+        
+        fprintf('ISOVOLUMIC \n');
+        fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
+        fprintf('Nonlinear observability rank: %d \n', r_iso);
+        fprintf('\n\n');
+        
+        fprintf('FILLING \n');
+        fprintf('Number of states in augmented state vector: %d \n', length(x_aug));
+        fprintf('Nonlinear observability rank: %d \n', r_filling);
+        fprintf('\n\n');
         
 %% Symbolic nonlinear observability - Villaverde approach
     syms dQvad den; % Consider upto the first order derivative of the input
