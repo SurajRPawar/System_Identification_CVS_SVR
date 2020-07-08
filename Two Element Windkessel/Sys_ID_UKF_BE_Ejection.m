@@ -52,16 +52,16 @@ include_us;
 %% User Inputs
     % Initial Conditions
     V0_guess = 5;                       % Guess for unstressed blood volume (mL)
-    Vlv0 = 100;                         % Initial left ventricle volume (mL)
-    Ps0 = 100;                          % Initial systemic pressure (mmHg)
+    Vlv0 = 280;                         % Initial left ventricle volume (mL)
+    Ps0 = 70;                          % Initial systemic pressure (mmHg)
     
     A_deviation =   0;                 % Percentage deviation from true A
     B_deviation =   0;                  % Percentage deviation from true B
     E_deviation =   0;                  % Percentage deviation from true E
-    B0 = 0.01;
-    Emax0 = 1;                          % Initial guess; Max LV Elastance
+    B0 = 0.02;
+    Emax0 = 0.5;                          % Initial guess; Max LV Elastance
     
-    p0 = diag([100, 50, 1e-3, 4]);      % Initial error covariance
+    p0 = diag([100, 25, 1e-3, 5]);      % Initial error covariance
         
     param_noise_std = 1*[1e-10; 1e-10]; % White noise standard deviation for parameters [B; Emax]
     
@@ -73,14 +73,15 @@ include_us;
     % What is the version of this experiment ? 
     experiment_versions;               % Contains description of versions
     version = 1;
-
+    waitflag = 0;
+    
 %% Measurements and parameters
-    data = noisy_twoelem_data;      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
       
     % True value of parameters
     Cs_true = data.parameters(1);
     Rsvr_true = data.parameters(2);
-    Pr_true = data.parameters(3);
+    Pr_true = 10; %data.parameters(3);
     Ra_true = data.parameters(4);
     Rm_true = data.parameters(5);
     A_true = (1 + A_deviation/100)*data.parameters(6);    
@@ -97,7 +98,7 @@ include_us;
     dt_original = data.dt;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 30, Fs);
+    Qa_filtered = lowpass(Qa_original, 20, Fs);
     
     % Interpolate all measurements to 1ms timing    
     dt = 0.001;
@@ -129,14 +130,13 @@ include_us;
     Euler integration. When we do convert it to Ito's form inside the
     function, the variance of the Brownian motion is q*dt
     %}
-    q = diag([data.process_noise_std.^2; param_noise_std.^2]);  % Process noise covariance
+    q = diag([data.process_noise_std.^2; param_noise_std.^2]);  % Process noise covariance    
     r = diag(data.meas_noise_std.^2);                           % Measurement noise covariance
     ukf_params = [alpha; kappa; beta];
     x0 = [Vlv0 - V0_guess; Ps0];                                % First state is Vbar = Vlv - V0
     theta0 = [B0; Emax0];
     
-%% UKF 
-    waitflag = 1;
+%% UKF     
     [xhat, yhat, Paug, teject] = func_TwoElem_SysID_UKF_BE_Ejection(t, y, Qvad, x0, theta0, p0,...
                                                                    q, r, parameters, ukf_params,...
                                                                    version, Qafiltstruct, waitflag);

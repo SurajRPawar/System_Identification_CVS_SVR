@@ -54,15 +54,15 @@ include_us;
 %% User Inputs
     % Initial Conditions
     V0_guess = 5;                   % Guess for unstressed blood volume
-    Vlv0 = 45;                      % Initial left ventricle volume (mL)
-    Ps0 = 120;                      % Initial systemic pressure (mmHg)
+    Vlv0 = 250;                      % Initial left ventricle volume (mL)
+    Ps0 = 80;                      % Initial systemic pressure (mmHg)
     
     A_deviation = 0;                % Percentage deviation from true A
     B_deviation = 0;                % Percentage deviation from true B
     E_deviation = 0;                % Percentage deviation from true E
-    A0 = 0.01;    
+    A0 = 0.1;    
     
-    p0 = diag([500, 100, 1e-1]);    % Initial error covariance
+    p0 = diag([100, 25, 1e-1]);    % Initial error covariance
         
     param_noise_std = 1*[1e-10];    % White noise standard deviation for parameters [A]
     
@@ -76,12 +76,12 @@ include_us;
     version = 2;
         
 %% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
       
     % True value of parameters
-    Cs_true = data.parameters(1);
+    Cs_true = 1.042; %data.parameters(1);
     Rsvr_true = data.parameters(2);
-    Pr_true = data.parameters(3);
+    Pr_true = 14; %data.parameters(3);
     Ra_true = data.parameters(4);
     Rm_true = data.parameters(5);
     A_true = (1 + A_deviation/100)*data.parameters(6);    
@@ -99,24 +99,24 @@ include_us;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
     Plv_original = data.Plv;    
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 30, Fs);
+    Qa_filtered = lowpass(Qa_original, 15, Fs);
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.0001;
+    dt = 0.001;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
     t = [0: dt : tf];                          % Time vector with 1 ms time steps    
     Ps_original = data.Ps;    
-    Qvad_original = data.Qvad;
-    Qa_original = data.Qa;
+    Qvad_original = data.Qvad;    
+    Qa_original = data.Qa;    
     Vbar_original = data.x(1,:) - V0_true;    
     
-    Plv = interp1(t_original, Plv_original, t);    
-    Pao = interp1(t_original, Ps_original, t);
-    Qa = interp1(t_original, Qa_original, t);
-    Qa_filtered = interp1(t_original, Qa_filtered, t);
-    Qvad = interp1(t_original, Qvad_original, t);
-    Vbar = interp1(t_original, Vbar_original, t);   % Vbar = Vlv - V0
+    Plv = interp1(t_original, Plv_original, t, 'linear', 'extrap');
+    Pao = interp1(t_original, Ps_original, t, 'linear', 'extrap');
+    Qa = interp1(t_original, Qa_original, t, 'linear', 'extrap');
+    Qa_filtered = interp1(t_original, Qa_filtered, t, 'linear', 'extrap');
+    Qvad = interp1(t_original, Qvad_original, t, 'linear', 'extrap');
+    Vbar = interp1(t_original, Vbar_original, t, 'linear', 'extrap');   % Vbar = Vlv - V0
     
     y = [Plv; Pao; Qa];    
     

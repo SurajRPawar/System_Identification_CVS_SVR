@@ -23,12 +23,12 @@ include_us;
 
 %% User Inputs
     % Initial Conditions    
-    Ps0 = 70;                      % Initial systemic pressure (mmHg)        
+    Ps0 = 100;                      % Initial systemic pressure (mmHg)        
     
     Cs0 = 1;                        % Initial guess for systemic compliance (mL/mmHg)
-    Pr0 = 20;                        % Initial guess for Pr (mmHg)
+    Pr0 = 5;                        % Initial guess for Pr (mmHg)
     
-    p0 = diag([100, 25, 50]);    % Initial error covariance
+    p0 = diag([25, 5, 100]);    % Initial error covariance
         
     param_noise_std = 1*[1e-10; 1e-10];    % White noise standard deviation for parameters [A]
     
@@ -42,14 +42,14 @@ include_us;
     version = 4;
         
 %% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
       
     % True value of parameters
     Cs_true = data.parameters(1);
     Rsvr_true = data.parameters(2);
     Pr_true = data.parameters(3);
-    Ra_true = 0.0021; %data.parameters(4);
-    Rm_true = 0.0021; %data.parameters(5);
+    Ra_true = 0.0025; %data.parameters(4);
+    Rm_true = 0.0025; %data.parameters(5);
     A_true = data.parameters(6);    
     B_true = data.parameters(7);
     E_true = data.parameters(8);
@@ -62,7 +62,7 @@ include_us;
     
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.0001;
+    dt = 0.001;
     dt_original = data.dt;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
@@ -71,9 +71,9 @@ include_us;
     Qvad_original = data.Qvad;
     Qa_original = data.Qa;    
          
-    Pao = interp1(t_original, Ps_original, t);
-    Qa = interp1(t_original, Qa_original, t);    
-    Qvad = interp1(t_original, Qvad_original, t);    
+    Pao = interp1(t_original, Ps_original, t, 'linear', 'extrap');
+    Qa = interp1(t_original, Qa_original, t, 'linear', 'extrap');
+    Qvad = interp1(t_original, Qvad_original, t, 'linear', 'extrap');
     Qao = Qa + Qvad;
     
     y = [Pao];    

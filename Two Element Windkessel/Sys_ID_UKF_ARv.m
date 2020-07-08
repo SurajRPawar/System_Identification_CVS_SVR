@@ -54,16 +54,16 @@ include_us;
 %% User Inputs
     % Initial Conditions
     V0_guess = 5;                   % Guess for unstressed blood volume
-    Vlv0 = 45;                      % Initial left ventricle volume (mL)
-    Ps0 = 120;                      % Initial systemic pressure (mmHg)
+    Vlv0 = 250;                      % Initial left ventricle volume (mL)
+    Ps0 = 80;                      % Initial systemic pressure (mmHg)
     
     A_deviation = 0;                % Percentage deviation from true A
     B_deviation = 0;                % Percentage deviation from true B
     E_deviation = 0;                % Percentage deviation from true E
     A0 = 0.01;    
-    Rv0 = 0.005;
+    Rv0 = 0.001;
     
-    p0 = diag([100, 100, 1e-1, 1e-6]);    % Initial error covariance
+    p0 = diag([100, 25, 1e-1, 1e-5]);    % Initial error covariance
         
     param_noise_std = 1*[1e-10; 1e-10];    % White noise standard deviation for parameters [A]
     
@@ -79,12 +79,12 @@ include_us;
     waitflag = 0;
     
 %% Measurements and parameters
-    data = noisy_twoelem_data('noisy_data_comp_healthy.mat');      % Load noisy two element data using this function
+    data = noisy_twoelem_data('noisy_data_comp_hf.mat');      % Load noisy two element data using this function
       
     % True value of parameters
-    Cs_true = data.parameters(1);
+    Cs_true = 1.223; %data.parameters(1);
     Rsvr_true = data.parameters(2);
-    Pr_true = data.parameters(3);
+    Pr_true = 40; %data.parameters(3); 0.894
     Ra_true = data.parameters(4);
     Rm_true = data.parameters(5);
     A_true = (1 + A_deviation/100)*data.parameters(6);    
@@ -102,10 +102,10 @@ include_us;
     Fs = 1/dt_original;                         % Sampling frequency (Hz)
     Plv_original = data.Plv;    
     Qa_original = data.Qa;
-    Qa_filtered = lowpass(Qa_original, 30, Fs);
+    Qa_filtered = lowpass(Qa_original, 15, Fs);
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.0001;
+    dt = 0.001;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
     t = [0: dt : tf];                          % Time vector with 1 ms time steps    
@@ -164,8 +164,7 @@ include_us;
     plot(tselect,xhat(1,:),'r.');
     hold off;
     legend({'Measured','Estimated'},'Orientation','horizontal');
-    title('Vbar (mL)');
-    xlabel('Time (s)');
+    title('Vbar (mL)');   
     ax = [ax, gca];
     
     axes(Plvplot); % Plv
@@ -174,8 +173,7 @@ include_us;
     plot(tselect,yhat(1,:),'r.');
     hold off;
     legend({'Measured','Estimated'},'Orientation','horizontal');
-    title('Plv (mmHg)');
-    xlabel('Time (s)');
+    title('Plv (mmHg)');    
     ax = [ax, gca];
     
     axes(Psplot); % Ps
@@ -184,8 +182,7 @@ include_us;
     plot(tselect,xhat(2,:),'r.');
     hold off;
     legend({'Measured','Estimated'},'Orientation','horizontal');
-    title('Pao (mmHg)');
-    xlabel('Time (s)');    
+    title('Pao (mmHg)');    
     ax = [ax, gca];
     
     axes(Aplot); % A
@@ -194,8 +191,7 @@ include_us;
     plot(tselect,xhat(3,:));
     hold off;
     legend({'Actual','Estimated'},'Orientation','horizontal');
-    title('A (mmHg)');
-    xlabel('Time (s)');        
+    title('A (mmHg)');           
     ax = [ax, gca];
     
     axes(Rvplot); % Rv
