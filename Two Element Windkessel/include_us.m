@@ -7,8 +7,12 @@ Identification experiment script so that all relevant files and folders are
 included. 
 
 ------------------------- Versions ----------------------------------------
+%{
 v1 : Suraj R Pawar, 6-9-2020
     - Initialize
+%}
+v2 : Suraj R Pawar, 7-20-2020
+    - Added code to set latex as default interpreter
 %}
 
 list = {'Function Files';
@@ -18,3 +22,8 @@ list = {'Function Files';
 for i = 1 : length(list)
     addpath(genpath(list{i}));
 end
+
+% Set latex to default interpreter
+set(groot, 'defaultAxesTickLabelInterpreter','none'); 
+set(groot, 'defaultLegendInterpreter','none');
+set(groot, 'defaultTextInterpreter','latex');
