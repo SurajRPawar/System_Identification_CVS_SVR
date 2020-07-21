@@ -23,10 +23,10 @@ include_us;
 
 %% ---------------------- User Inputs -------------------------------------
     % Data file to load
-    datafilename = 'sync_1_1_SysID.mat';
+    datafilename = 'noisy_data_comp_hf.mat';
     
     % Set known values
-    Pr_true = 12;                        % (mmHg)
+    Pr_true = 3.7;                        % (mmHg)
     
     % Initial Conditions    
     Ps0 = 65;                          % Initial systemic pressure (mmHg)            
@@ -34,7 +34,7 @@ include_us;
     Rv0 = 0.001;    
     
     % Initial covariances
-    p0 = diag([5, 5, 1e-5]);           % Initial error covariance
+    p0 = diag([5, 1, 1e-5]);           % Initial error covariance
         
     % Process noise terms
     data.process_noise_std(2) = 1;      % If you want to override default value
@@ -66,13 +66,13 @@ include_us;
     V0_true = data.parameters(9);
     HR_true = data.parameters(10);
     t_c_true = data.parameters(11);
-    t_vc_true = 0.6;%data.parameters(12);    
+    t_vc_true = 0.41;%data.parameters(12);    
     parameters = [Rsvr_true; Cs_true; Pr_true; Ra_true; Rm_true; HR_true; t_vc_true; t_c_true;...
                   A_true; B_true; E_true; V0_true]; % To be passed to UKF       
     
     
     % Interpolate all measurements to 1ms timing    
-    dt = 0.0001;
+    dt = 0.001;
     dt_original = data.dt;
     tf = data.num_beats*data.parameters(11);   % Final time for simulation
     t_original = [0 : dt_original : tf];       % Time vector from measurement file
