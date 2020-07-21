@@ -155,7 +155,8 @@ v1 : Suraj R Pawar, 6-11-2020
                 
             % Update the augmented state vector
                 x_aug([1:num_states],i) = mean_post;
-                p_aug(:,:,i) = blkdiag(cov_post, diag(QdB), r);                               
+                p_aug(:,:,i) = blkdiag(cov_post, diag(QdB), r);  
+                yhat(:,i) = mean_prior_meas;
         end
         
         if waitflag == 1
@@ -163,5 +164,5 @@ v1 : Suraj R Pawar, 6-11-2020
         end
         
     %% Generate Outputs
-        xhat = x_aug([1:num_states],:);        
+        xhat = x_aug([1:num_states],:);
 end
