@@ -107,6 +107,7 @@ title('Qa (mL/s)');
     pos = [259.3333 , 115.3333 , 685.0000 , 514.3333];
 
     if figurestyle == 2
+        figure('Position', pos);
         Csplot = subplot(3,2,1);
         Rvplot = subplot(3,2,2);
         Aplot = subplot(3,2,3);
@@ -173,7 +174,7 @@ title('Qa (mL/s)');
     end
     plot(tbe,b,'k','LineWidth',linewidth); grid on;
     if figurestyle == 2
-        title(['\boldmath $\hat{B} \rightarrow',num2str(means(2),3),'$\bf 1/mL ']);
+        title(['\boldmath $\hat{B} \rightarrow',num2str(means(2),3),'$ \bf 1/mL']);
         xlabel('\bf Time (s)');
     else
         xlabel('\bf Time (s)'); ylabel('\boldmath $\hat{B}$ \bf (1/mL)');

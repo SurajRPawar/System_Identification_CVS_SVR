@@ -23,7 +23,7 @@ include_us;
 
 %% ---------------------- User Inputs -------------------------------------
     % Data file to load
-    datafilename = 'noisy_data_comp_hf.mat';
+    datafilename = 'sync_1_1_SysID.mat';
     
     % Set known values
     Pr_true = 3.7;                        % (mmHg)

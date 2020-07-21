@@ -10,13 +10,16 @@ included.
 %{
 v1 : Suraj R Pawar, 6-9-2020
     - Initialize
-%}
 v2 : Suraj R Pawar, 7-20-2020
     - Added code to set latex as default interpreter
 %}
+v3 : Suraj R Pawar, 7-21-2020
+    - Added Results folder to inclusion list
+%}
 
 list = {'Function Files';
-        'Measurement Files'
+        'Measurement Files';
+        'Results';
         '../Common Files'};
     
 for i = 1 : length(list)

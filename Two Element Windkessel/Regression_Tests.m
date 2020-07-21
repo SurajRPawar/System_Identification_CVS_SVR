@@ -18,39 +18,39 @@ include_us;
 %% ------------------------- User Inputs ----------------------------------
     
     % Experiment
-    num_trials = 1;
+    num_trials = 10;
     num_cycles = 30;
     vad = 1;
     
     % Logging
     filename = 'Results/Regression_Tests.xlsx';
-    logging = 0;
+    logging = 1;
     
     % Upper and lower Limits for parameters
-    uA = 0.2; 
-    lA = 0.15;
+    uA = 0.05; 
+    lA = 0.01;
     
-    uB = 0.018;
-    lB = 0.012;
+    uB = 0.07;
+    lB = 0.03;
     
-    uE = 0.35;
-    lE = 0.28;
+    uE = 5;
+    lE = 2;
     
-    uCs = 0.7;
-    lCs = 0.6;
+    uCs = 2;
+    lCs = 1;
     
-    uRsvr = 1.08;
-    lRsvr = 1.05;
+    uRsvr = 0.9;
+    lRsvr = 1;
     
-    uRv = 0.003;
-    lRv = 0.002;
+    uRv = 0.004;
+    lRv = 0.001;
     
     uHR = 82;
     lHR = 80;
     
-    override_parameters = 1;                                        % If you want to manually set the parameters
-    parameters_set = [0.18, 0.016, 0.3, 0.65, 1.075, 0.0025, 90];   % A, B, E, Cs, Rsvr, Rv, HR
-    heart_condition = 2;                                            % 1 = Healthy, 2 = Heart Failure
+    override_parameters = 0;                                        % If you want to manually set the parameters
+    parameters_set = [0.03, 0.05, 3.25, 1.25, 0.975, 0.0025, 80];   % A, B, E, Cs, Rsvr, Rv, HR
+    heart_condition = 1;                                            % 1 = Healthy, 2 = Heart Failure
     
     override_tvc = 0;                                               % 0 = Calculate tvc, 1 = Manually set tvc 
     tvc_manual = 0.6;   
@@ -59,7 +59,7 @@ include_us;
     initial_guesses.A0 = 0.01;
     initial_guesses.B0 = 0.01;
     initial_guesses.Emax0 = 1;
-    initial_guesses.Vbar0 = 280;        % 150 for healthy, 250 for heart failure
+    initial_guesses.Vbar0 = 150;        % 150 for healthy, 250 for heart failure
     
     % Filtering for Qa signal
     Qa_filter.lowpass = 15;
@@ -67,20 +67,20 @@ include_us;
     Qa_filter.lower = 0;
     
     % Known / Approximated parameters
-    Pr_true = 14;    % (mmHg), 3 for healthy, 14 for heart failure
+    Pr_true = 3;    % (mmHg), 3 for healthy, 14 for heart failure
     V0_true = 5;    % (mL)
         
     % Noise statistics   
     pressure_noise_process = 5;  
-    flow_noise_process = 0.8;   % Not used in UKF weightings
-    volume_noise_process = 1;
+    flow_noise_process = 1;   % Not used in UKF weightings
+    volume_noise_process = 0.5;
     
     pressure_noise_meas = 0.8; 
-    flow_noise_meas = 0.1;
+    flow_noise_meas = 0.5;
     volume_noise_meas = 0.8;    % Not used in UKF weightings
     
     % Plotting parameters
-    decimation = 5;
+    decimation = 10;
     figurestyle = 2;            % 1 = separate figures, 2 = all together
     
 %% ----------------------------- Prepare parameters -----------------------
@@ -126,12 +126,13 @@ include_us;
         
         [Cs, Rv, y1] = CsRv_estimator(noisy_signals, parameters, Pr_true, V0_true, t_vc_true, process_noise, meas_noise);
         if Cs < 0
-            fprintf('Aborting... \n');
-            return;
+            fprintf('Bad Run... \n');
+            %return;
         end
         
         % Estimate A, B, Emax                
         initial_guesses.Ps0 = noisy_signals(1,2);
+        %initial_guesses.Vbar0 = noisy_signals(1,5);
         [A, B, Emax, y2] = ABE_estimator(noisy_signals, parameters, Pr_true, Cs, Rv, svr, t_vc_true, process_noise, meas_noise, Qa_filter, initial_guesses, num_cycles);
         
         % Collect estimated parameters
@@ -166,5 +167,5 @@ include_us;
         T = table(A_true,A_est,B_true, B_est, E_true, E_est, ...
                   Cs_true, Cs_est, svr_true, svr_est, Rv_true, Rv_est);
               
-        writetable(T,filename);
+        writetable(T,filename,'WriteMode','Append');
     end

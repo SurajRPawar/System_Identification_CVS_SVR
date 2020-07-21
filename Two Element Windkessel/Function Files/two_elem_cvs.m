@@ -22,19 +22,11 @@ function [xdot, y] = two_elem_cvs(t, x, parameters)
     Vlv     = x(1);
     Ps      = x(2);    
     
-% Compute left ventricle elastance ========================================
-
-%     t_n     = mod(t,t_c);   % Normalized time in the cardiac cycle
-%     if t_n >= 0 && t_n < 2*t_vc/3
-%         e_n     = 0.5*(1 - cos(3*pi*t_n / (2*t_vc)) );
-%     elseif t_n >= 2*t_vc/3 && t_n < t_vc
-%         e_n     = 0.5*( 1 + cos(3*pi*t_n/t_vc - 2*pi) );
-%     else
-%         e_n     = 0;
-%     end
-    shift = 2/3;
-    e_n = normalized_elastance(t, t_c, t_vc, shift);
+% Compute left ventricle elastance ========================================    
+    e_n = normalized_elastance(t, t_c, t_vc);
+    
 % Interpolate QVAD signal =================================================
+    t_n = mod(t,t_c);
     
     %Qvad = interp1(t_sim, Z_Qvad, t);
     if t_n>= 0.24 && t_n < 0.54;
@@ -57,7 +49,7 @@ function [xdot, y] = two_elem_cvs(t, x, parameters)
         else
             % Aortic valve and ejection
                 if Plv > Ps;
-                    Qa = (1/Ra)*(Plv - Ps);
+                    Qa = (1/Ra)*sqrt(Plv - Ps);
                     % Do not let Qa be negative
                         if Qa <= 0
                             Qa = 0;
@@ -69,7 +61,7 @@ function [xdot, y] = two_elem_cvs(t, x, parameters)
                 end
             % Mitral valve and filling
                 if Pr > Plv && ejection ~= 1
-                    Qm          = (1/Rm)*(Pr - Plv);
+                    Qm          = (1/Rm)*sqrt(Pr - Plv);
                     filling     = 1;                    % Filling
                     % Don't let Qm be negative
                         if Qm <= 0
