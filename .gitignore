@@ -6,3 +6,6 @@
 
 # Ignore some files created by MATLAB
 *.asv
+
+# Files to ignore
+**/Regression_Tests.xlsx
