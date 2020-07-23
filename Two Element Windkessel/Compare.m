@@ -5,32 +5,32 @@ include_us;
 
 
 %% Load signals generated from computational model
-load('signals_healthy_vad.mat');
+load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.0219;
-    B = 0.0539;
-    Emax = 1.9;
-    Cs = 1.46;
-    Rsvr = 0.9877;
+    A = 0.207;
+    B = 0.016;
+    Emax = 0.3;
+    Cs = 0.919;
+    Rsvr = 1.0752;
     V0 = 5;
-    Pr = 3;
-    Rv = 0.005305;
+    Pr = 14;
+    Rv = 0.01476;
     
     % Initial Conditions
-    Vlv0 = 91.58 + V0;
-    Ps0 = 105.6;
+    Vlv0 = 259.5 + V0;
+    Ps0 = 73.67;
     
     % Timing
-    HR = 80;
+    HR = 90;
     num_cycles = 30;
     
 %% Simulate Two Element Model
 
     tc = 60/HR;
     tf = num_cycles * tc;
-    dt = 0.001;
+    dt = 0.0001;
     t = [0 : dt : tf];
     tvc = (550 - 1.75*HR)/1000;
     
@@ -60,9 +60,35 @@ load('signals_healthy_vad.mat');
     
     Pao = X(:,2).';
     
+%% RMSEs
+    dPhat = Plv - Pao;
+    dP = cPlv - cPao;
+    se_dP = (dP - dPhat).^2;
+    mse_dP = mean(se_dP);
+    rmse_dP = sqrt(mse_dP);
+    
+    se_Plv = (cPlv - Plv).^2;
+    mse_Plv = mean(se_Plv);
+    rmse_Plv = sqrt(mse_Plv);
+    
+    se_Pao = (cPao - Pao).^2;
+    mse_Pao = mean(se_Pao);
+    rmse_Pao = sqrt(mse_Pao);
+    
+    se_Qa = (cQa - Qa).^2;
+    mse_Qa = mean(se_Qa);
+    rmse_Qa = sqrt(mse_Qa);
+    
+    fprintf('RMSE of PLV = %.3f mmHg\n', rmse_Plv);
+    fprintf('RMSE of Pao = %.3f mmHg\n', rmse_Pao);
+    fprintf('RMSE of dP = %.3f mmHg\n', rmse_dP);
+    fprintf('RMSE of Qa = %.3f mL/s\n', rmse_Qa);
+    
 %% Figures
     set(0, 'DefaultLineLineWidth',1);
     set(0, 'DefaultLegendFontWeight','bold');
+    set(0, 'DefaultLegendOrientation','vertical');
+    set(0, 'DefaultLegendBox','off');
     linewidth = 0.8;
     
     figure;
@@ -74,7 +100,7 @@ load('signals_healthy_vad.mat');
     hold on;
     plot(ct,cPlv,'-k');
     plot(t,Plv,':k');
-    hold off;
+    hold off;    
     ax1 = gca;
     apply_axis_properties(ax1, linewidth);
     legend('Computational','Two Element');
@@ -93,12 +119,71 @@ load('signals_healthy_vad.mat');
     
     linkaxes([ax1, ax2], 'x');
     
-    figure;
+    figure;    
     hold on;
     plot(ct,cQa,'-k');
-    plot(t,Qa,':k');
+    plot(t,Qa,':r');
     hold off;
     ax = gca;
     apply_axis_properties(ax, linewidth);
     legend('Computational','Two Element');
     ylabel('\boldmath $Q_{a}$ \bf mL/s');
+    
+    figure; % Comparison of outputs
+    decimation = 100;
+    Plv_compare = subplot(2,2,1);
+    Pao_compare = subplot(2,2,2);
+    dP_compare = subplot(2,2,3);
+    Qa_compare = subplot(2,2,4);
+    
+    axes(Plv_compare);
+    hold on;
+    plot(t,cPlv,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
+    plot(t(1:decimation:end),Plv(1:decimation:end),':k');
+    hold off;
+    title(['\bf RMSE = \boldmath $',num2str(rmse_Plv,2),'$ mmHg']);
+    ax1 = gca;
+    %ylim([min(ylim) 100]);
+    apply_axis_properties(ax1, linewidth);
+    ylabel('\boldmath $P_{lv}$ \bf (mmHg)');
+    legend('Computational','Two Element');
+    
+    axes(Pao_compare);
+    hold on;
+    plot(t,cPao,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
+    plot(t(1:decimation:end),Pao(1:decimation:end),':k');
+    hold off;
+    title(['\bf RMSE = \boldmath $',num2str(rmse_Pao,2),'$ mmHg']);
+    ax2 = gca;
+    %ylim([min(ylim) 110]);
+    apply_axis_properties(ax2, linewidth);
+    ylabel('\boldmath $P_{ao}$ \bf (mmHg)');
+    %legend('Computational','Two Element');
+    
+    axes(dP_compare);
+    hold on;
+    plot(t,dP,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
+    plot(t(1:decimation:end),dPhat(1:decimation:end),':k');
+    hold off;
+    title(['\bf RMSE = \boldmath $',num2str(rmse_dP,2),'$ mmHg']);
+    ax3 = gca;
+    %ylim([min(ylim) 50]);
+    apply_axis_properties(ax3, linewidth);
+    ylabel('\boldmath $\Delta P$ \bf (mmHg)');
+    xlabel('\bf Time (s)');
+    %legend('Computational','Two Element');
+    
+    axes(Qa_compare);
+    hold on;
+    plot(t,cQa,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
+    plot(t(1:decimation:end),Qa(1:decimation:end),':k');
+    hold off;
+    title(['\bf RMSE = \boldmath $',num2str(rmse_Qa,2),'$ mL/s']);
+    ax4 = gca;
+    %ylim([min(ylim) 250]);
+    apply_axis_properties(ax4, linewidth);
+    ylabel('\boldmath $Q_{a}$ \bf mL/s');
+    xlabel('\bf Time (s)');
+    %legend('Computational','Two Element');
+    
+    linkaxes([ax1,ax2,ax3,ax4],'x');
