@@ -71,7 +71,7 @@ v3 : Suraj R Pawar, 7-20-2020
     Rv0 = 0.001;    
     
     % Initial covariances
-    p0 = diag([1, 1, 1e-4]);           % Initial error covariance
+    p0 = diag([1, 1, 1e-5]);           % Initial error covariance
         
     % Process noise terms
     %data.process_noise_std(2) = 1;      % If you want to override default value

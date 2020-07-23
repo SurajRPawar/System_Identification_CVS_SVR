@@ -93,9 +93,9 @@ v2 : Suraj R Pawar, 7-20-2020
     A0 = initial_guesses.A0;
     
     % Initial covariances
-    p0_states = diag([1, 1]);
-    p0_be = diag([1e-4, 1]);
-    p0_a = [5];
+    p0_states = diag([2, 1]);
+    p0_be = diag([1e-3, 1]);
+    p0_a = [1];
     
     % Process noise terms    
     param_noise_std_be = [1e-10; 1e-10];    % White noise standard deviation for parameters [B, Emax]

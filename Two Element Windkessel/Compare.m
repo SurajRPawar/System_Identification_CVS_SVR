@@ -9,18 +9,18 @@ load('signals_healthy_vad.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.0207;
-    B = 0.0518;
-    Emax = 3.2;
-    Cs = 1.33;
-    Rsvr = 0.9749;
+    A = 0.0219;
+    B = 0.0539;
+    Emax = 1.9;
+    Cs = 1.46;
+    Rsvr = 0.9877;
     V0 = 5;
     Pr = 3;
-    Rv = 0.004859;
+    Rv = 0.005305;
     
     % Initial Conditions
-    Vlv0 = 96.26 + V0;
-    Ps0 = 73;
+    Vlv0 = 91.58 + V0;
+    Ps0 = 105.6;
     
     % Timing
     HR = 80;
