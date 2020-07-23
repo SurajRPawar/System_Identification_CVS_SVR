@@ -5,39 +5,42 @@ include_us;
 
 
 %% Load signals generated from computational model
-load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
+load('Results/Resulting Signals/Resulting_Signals_Animal_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.207;
-    B = 0.016;
-    Emax = 0.3;
-    Cs = 0.919;
-    Rsvr = 1.0752;
-    V0 = 5;
-    Pr = 14;
-    Rv = 0.01476;
+    A = 0.00165;
+    B = 0.0516;
+    Emax = 0.71;
+    Cs = 1.27;
+    Rsvr = 0.7684;
+    V0 = 0;
+    Pr = 15;
+    Rv = 0.005515;
     
     % Initial Conditions
-    Vlv0 = 259.5 + V0;
-    Ps0 = 73.67;
+    Vlv0 = 176.4 + V0;
+    Ps0 = 62.28;
     
     % Timing
-    HR = 90;
-    num_cycles = 30;
+    HR = 70.6057;
+    num_cycles = 50;
     
 %% Simulate Two Element Model
 
     tc = 60/HR;
     tf = num_cycles * tc;
-    dt = 0.0001;
+    dt = 0.001;
     t = [0 : dt : tf];
-    tvc = (550 - 1.75*HR)/1000;
+    %tvc = (550 - 1.75*HR)/1000;
+    tvc = 0.6;
     
     x0 = [Vlv0; Ps0];
     parameters = [Cs; Rsvr; Pr; Rv; Rv; A; B; Emax; V0; HR; tc; tvc];
+    Qvad_meas = signals(:,7).';
+    t_meas = signals(:,8).';
     
-    [T,X] = ode15s(@(t,x) two_elem_cvs(t,x,parameters),t,x0);
+    [T,X] = ode23s(@(t,x) two_elem_cvs(t,x,parameters, t_meas, Qvad_meas),t,x0);
     
 %% Get outputs
     
@@ -47,7 +50,7 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     Qa = zeros(1,steps);
     
     for i = 1 : steps
-        [~,y] = two_elem_cvs(t(i),X(i,:).',parameters);
+        [~,y] = two_elem_cvs(t(i),X(i,:).',parameters, t_meas, Qvad_meas);
         Qa(i) = y(1);
         Plv(i) = y(3);
     end

@@ -1,7 +1,7 @@
 % Function file for two element windkessel model
 % Refer to PhD file 11-8-19 (1)
 
-function [xdot, y] = two_elem_cvs(t, x, parameters)
+function [xdot, y] = two_elem_cvs(t, x, parameters, t_meas, Z_Qvad)
 % Extract Parameters ======================================================
 
     Cs      = parameters(1);
@@ -28,12 +28,12 @@ function [xdot, y] = two_elem_cvs(t, x, parameters)
 % Interpolate QVAD signal =================================================
     t_n = mod(t,t_c);
     
-    %Qvad = interp1(t_sim, Z_Qvad, t);
-    if t_n>= 0.24 && t_n < 0.54;
-        Qvad = (2*35/0.3)*(0.5 - 0.5*cos(2*pi*(t_n-0.24)/0.3));
-    else 
-        Qvad = 0;
-    end;
+    Qvad = interp1(t_meas, Z_Qvad, t);
+%     if t_n>= 0.24 && t_n < 0.54;
+%         Qvad = (2*35/0.3)*(0.5 - 0.5*cos(2*pi*(t_n-0.24)/0.3));
+%     else 
+%         Qvad = 0;
+%     end;
     
 % Compute left ventricle pressure =========================================
     Plv     = (1 - e_n)*A*(exp(B*(Vlv - V0)) - 1) + e_n*E*(Vlv - V0);
