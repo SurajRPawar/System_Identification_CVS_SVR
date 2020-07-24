@@ -5,35 +5,35 @@ include_us;
 
 
 %% Load signals generated from computational model
-load('Results/Resulting Signals/Resulting_Signals_Animal_Sim.mat');
+load('Results/Resulting Signals/Resulting_Signals_Healthy_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.00141;
-    B = 0.0514;
-    Emax = 0.69;
-    Cs = 1.27;
-    Rsvr = 0.7684;
+    A = 0.025;
+    B = 0.0496;
+    Emax = 3.2;
+    Cs = 1.3;
+    Rsvr = 0.9748;
     V0 = 0;
-    Pr = 15;
-    Rv = 0.005515;
+    Pr = 3;
+    Rv = 0.004826;
     
     % Initial Conditions
-    Vlv0 = 208.8 + V0;
-    Ps0 = 62.28;
+    Vlv0 = 96.6 + V0;
+    Ps0 = 108.2;
     
     % Timing
-    HR = 70.6057;
-    num_cycles = 50;
+    HR = 80;
+    num_cycles = 30;
     
 %% Simulate Two Element Model
 
     tc = 60/HR;
     tf = num_cycles * tc;
-    dt = 0.001;
+    dt = 0.0001;
     t = [0 : dt : tf];
-    %tvc = (550 - 1.75*HR)/1000;
-    tvc = 0.6;
+    tvc = (550 - 1.75*HR)/1000;
+    %tvc = 0.6;
     
     x0 = [Vlv0; Ps0];
     parameters = [Cs; Rsvr; Pr; Rv; Rv; A; B; Emax; V0; HR; tc; tvc];
