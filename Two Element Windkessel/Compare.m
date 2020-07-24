@@ -9,9 +9,9 @@ load('Results/Resulting Signals/Resulting_Signals_Animal_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.00165;
-    B = 0.0516;
-    Emax = 0.71;
+    A = 0.00141;
+    B = 0.0514;
+    Emax = 0.69;
     Cs = 1.27;
     Rsvr = 0.7684;
     V0 = 0;
@@ -19,7 +19,7 @@ load('Results/Resulting Signals/Resulting_Signals_Animal_Sim.mat');
     Rv = 0.005515;
     
     % Initial Conditions
-    Vlv0 = 176.4 + V0;
+    Vlv0 = 208.8 + V0;
     Ps0 = 62.28;
     
     % Timing
