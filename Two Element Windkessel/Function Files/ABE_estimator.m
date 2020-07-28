@@ -93,7 +93,7 @@ v2 : Suraj R Pawar, 7-20-2020
     A0 = initial_guesses.A0;
     
     % Initial covariances
-    p0_states = diag([2, 1]);
+    p0_states = diag([1, 1]);
     p0_be = diag([1e-3, 1]);
     p0_a = [1];
     
