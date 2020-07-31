@@ -12,7 +12,9 @@ t         : Current time (sec)
 dt        : Step size for Euler Integration (sec) 
 sigmas    : Current sigma points (include augmented states, process 
                                   and measurement noise terms)
-Qao       : Input signal of Aortic flow (Qvad + Qa) (mL/s)
+u         : Input signals
+            1. Plv
+            2. Qa
 parametes : All parameter values
              1. Rsvr : Systemic Vascular Resistance (mmHg/mL/s)
              2. Cs   : Systemic compliance (mL/mmHg)
@@ -37,9 +39,13 @@ est_meas     : Estimated measurements
 
 -------------------------- VERSION HISTORY --------------------------------
 %{
-%}
 v1 : Suraj R Pawar, 6-22-2020
      - Initialize
+%}
+v2 : Suraj R Pawar, 7-31-2020
+    - Fixed description. 
+    - Instead of u in the inputs, the description mentioned Qao. Replaced
+    with the right description
 %}
 
     % Get known / estimated parameters depending on version
