@@ -28,5 +28,5 @@ end
 
 % Set latex to default interpreter
 set(groot, 'defaultAxesTickLabelInterpreter','none'); 
-set(groot, 'defaultLegendInterpreter','none');
+set(groot, 'defaultLegendInterpreter','latex');
 set(groot, 'defaultTextInterpreter','latex');

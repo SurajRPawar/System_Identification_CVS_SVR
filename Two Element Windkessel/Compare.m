@@ -5,25 +5,25 @@ include_us;
 
 
 %% Load signals generated from computational model
-load('Results/Resulting Signals/Resulting_Signals_Healthy_Sim.mat');
+load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.025;
-    B = 0.0496;
-    Emax = 3.2;
+    A = 0.207;
+    B = 0.016;
+    Emax = 0.3;
     Cs = 1.3;
-    Rsvr = 0.9748;
+    Rsvr = 1.0752;
     V0 = 0;
-    Pr = 3;
-    Rv = 0.004826;
+    Pr = 14;
+    Rv = 0.01476;
     
     % Initial Conditions
-    Vlv0 = 96.6 + V0;
-    Ps0 = 108.2;
+    Vlv0 = 259.5 + V0;
+    Ps0 = 73.67;
     
     % Timing
-    HR = 80;
+    HR = 90;
     num_cycles = 30;
     
 %% Simulate Two Element Model
