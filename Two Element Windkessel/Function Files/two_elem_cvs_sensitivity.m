@@ -3,9 +3,11 @@
 % Used for calculation of the sensitivity coefficient matrix. Refer to PhD
 % Research -> SVR Phase 2 -> 8
 % Pawar, 2-24-2020
+%
+% Adjusted for new two element model, 2-1-2021
 % -------------------------------------------------------------------------
 
-function [xdot, y, Z] = two_elem_cvs(t, x, parameters, Qvad)
+function [xdot, y, Z] = two_elem_cvs_sensitivity(t, x, parameters, Qvad)
 % Extract Parameters ======================================================
 
     Cao = parameters(1);
@@ -80,7 +82,7 @@ function [xdot, y, Z] = two_elem_cvs(t, x, parameters, Qvad)
     if ejection == 1
         % Ejection
         Vbardot  = -Qvad - Qa;
-        Paodot   = (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr) + Qa);
+        Paodot   = (1/Cao)*(Qvad - (1/Rsvr)*(Pao) + Qa);
         stage = 2;        
         Z = Z_function(theta, x, Qvad, stage);
         %{
@@ -92,7 +94,7 @@ function [xdot, y, Z] = two_elem_cvs(t, x, parameters, Qvad)
     elseif filling == 1
         % Filling
         Vbardot  = -Qvad + Qm;
-        Paodot   = (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
+        Paodot   = (1/Cao)*(Qvad - (1/Rsvr)*(Pao));
         stage = 3;
         Z = Z_function(theta, x, Qvad, stage);
         %{
@@ -104,7 +106,7 @@ function [xdot, y, Z] = two_elem_cvs(t, x, parameters, Qvad)
     elseif ejection == 0 && filling == 0
         % Isovolumic
         Vbardot  = -Qvad;
-        Paodot   = (1/Cao)*(Qvad  - (1/Rsvr)*(Pao - Pr));
+        Paodot   = (1/Cao)*(Qvad  - (1/Rsvr)*(Pao));
         stage = 1;
         Z = Z_function(theta, x, Qvad, stage);
         %{

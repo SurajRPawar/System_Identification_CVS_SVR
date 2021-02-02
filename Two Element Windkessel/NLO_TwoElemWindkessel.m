@@ -38,7 +38,7 @@ clear all; close all; clc;
 
     % -------------  User input -------------------------------------------
         x = [Vlv; Pao];                                 % State vector
-        theta = [Cao; Pr; Rv];              % Unknown parameters                
+        theta = [Cao; Rv; Pr];              % Unknown parameters                
         Qa = (Plv - Pao)/Rv;                            % Equation for aortic flow
         y = [Pao; Qa];                             % Measurements. Qa will be removed for iso and filling stages       
     %----------------------------------------------------------------------
@@ -50,7 +50,7 @@ clear all; close all; clc;
     %% Ejection
     
         f_ejection = [-Qvad - (Plv - Pao)/Rv;
-                       (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr) + (Plv - Pao)/Rv);
+                       (1/Cao)*(Qvad - (1/Rsvr)*(Pao) + (Plv - Pao)/Rv);
                        param_dynamics];
         y_ejection = y;
 %         y_ejection = Plv - Pao;
@@ -58,7 +58,7 @@ clear all; close all; clc;
         
     %% Isovolumic 
         f_iso = [-Qvad;
-                  (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
+                  (1/Cao)*(Qvad - (1/Rsvr)*(Pao));
                   param_dynamics];
         y_iso = [y(1); 0];
 %         y_iso = Plv - Pao;
@@ -67,7 +67,7 @@ clear all; close all; clc;
             
     %% Filling
         f_filling = [-Qvad + (Pr - Plv)/Rv;
-                      (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
+                      (1/Cao)*(Qvad - (1/Rsvr)*(Pao));
                       param_dynamics];
         y_filling = [y(1); 0];
 %         y_filling = Plv - Pao;

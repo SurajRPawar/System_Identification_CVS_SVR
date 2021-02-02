@@ -32,6 +32,8 @@ matrix.
 %{
 v1 : Suraj R Pawar, 7-28-2020
 %}
+v2 : Suraj R Pawar, 2-1-2021
+    - Modified for the new (slightly varied) two element windkessel model
 %}
 
 clear all; close all; clc;
@@ -65,7 +67,7 @@ theta = [A, B, E, Rsvr, Cao, Rv, Pr].';
 
 % Ejection
     Vbar_kk = Vbar + (-Qvad - (1/Rv)*sqrt(Plv - Pao))*T;
-    Pao_kk = Pao + ((1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr) + (1/Rv)*sqrt(Plv - Pao)))*T;
+    Pao_kk = Pao + ((1/Cao)*(Qvad - (1/Rsvr)*(Pao) + (1/Rv)*sqrt(Plv - Pao)))*T;
     
     Plv_kk = (1 - e)*A*(exp(B*(Vbar_kk)) - 1) + e*E*(Vbar_kk);
     Qao_kk = (1/Rv)*sqrt(Plv_kk - Pao_kk);
@@ -75,7 +77,7 @@ theta = [A, B, E, Rsvr, Cao, Rv, Pr].';
     
 % Filling
     Vbardot = -Qvad + (1/Rv)*sqrt(Pr - Plv);
-    Paodot = (1/Cao)*(Qvad - (1/Rsvr)*(Pao - Pr));
+    Paodot = (1/Cao)*(Qvad - (1/Rsvr)*(Pao));
     Vbar_kk  = Vbar + (Vbardot)*T;
     Pao_kk   = Pao + (Paodot)*T;
 
@@ -93,7 +95,7 @@ theta = [A, B, E, Rsvr, Cao, Rv, Pr].';
     
 % Isovolumic
     Vbar_kk  = Vbar + (-Qvad)*T;
-    Pao_kk   = Pao + ((1/Cao)*(Qvad  - (1/Rsvr)*(Pao - Pr)))*T;
+    Pao_kk   = Pao + ((1/Cao)*(Qvad  - (1/Rsvr)*(Pao)))*T;
 
     Plv_kk = (1 - e)*A*(exp(B*(Vbar_kk)) - 1) + e*E*(Vbar_kk);
     Qao_kk = 0;

@@ -78,19 +78,19 @@ function [xdot, y] = two_elem_cvs(t, x, parameters, t_meas, Z_Qvad)
     if ejection == 1
         % Ejection
         Vlvdot  = -Qvad - Qa;
-        Psdot   = (1/Cs)*(Qvad - (1/Rsvr)*(Ps - Pr) + Qa);
+        Psdot   = (1/Cs)*(Qvad - (1/Rsvr)*(Ps) + Qa);
         stage = 2;
         
     elseif filling == 1
         % Filling
         Vlvdot  = -Qvad + Qm;
-        Psdot   = (1/Cs)*(Qvad - (1/Rsvr)*(Ps - Pr));
+        Psdot   = (1/Cs)*(Qvad - (1/Rsvr)*(Ps));
         stage = 3;
         
     elseif ejection == 0 && filling == 0
         % Isovolumic
         Vlvdot  = -Qvad;
-        Psdot   = (1/Cs)*(Qvad  - (1/Rsvr)*(Ps - Pr));
+        Psdot   = (1/Cs)*(Qvad  - (1/Rsvr)*(Ps));
         stage = 1;
     end
     

@@ -12,6 +12,8 @@ To run this file, you need the following :
 v1 : Suraj R Pawar, 7-28-2020
     - Initialize
 %}
+v2 : Suraj R Pawar, 2-1-2021
+    - Running with new two element windkessel model
 %}
 
 clear all; close all; clc;
@@ -32,7 +34,7 @@ include_us;
             Rsvr = 0.975;            % Systemic Vascular Resistance (mmHg.s/mL)
 
         % Pulmonary Circulation
-            Pr  = 3.7;               % Pulmonary circulation approximated as constant pressure source (mmHg)
+            Pr  = 3;               % Pulmonary circulation approximated as constant pressure source (mmHg)
 
         % Valves (Aortic and Mitral)
             Rv = 0.0025;             % Valve resistance, kept same for both valves (mmHg.s/mL)
