@@ -9,20 +9,46 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
-    A = 0.207;
-    B = 0.016;
-    Emax = 0.3;
-    Cs = 1.3;
+%     A = 0.207;
+%     B = 0.016;
+%     Emax = 0.3;
+%     Cs = 1.3;
+%     Rsvr = 1.0752;
+%     V0 = 0;
+%     Pr = 14;
+%     Rv = 0.01476;
+    
+%     A = 0.0252;
+%     B = 0.0492;
+%     Emax = 3.2;
+%     Cs = 1.31;
+%     Rsvr = 0.9748;
+%     V0 = 5;
+%     Pr = 3;
+%     Rv = 0.004786;
+    
+    A = 0.501;
+    B = 0.0145;
+    Emax = 0.35;
+    Cs = 0.889;
     Rsvr = 1.0752;
-    V0 = 0;
-    Pr = 14;
-    Rv = 0.01476;
+    V0 = 5;
+    Pr = 13.8;
+    Rv = 0.01475;
     
     % Initial Conditions
-    Vlv0 = 259.5 + V0;
-    Ps0 = 73.67;
+%     Vlv0 = 259.5 + V0;
+%     Ps0 = 73.67;
+    
+%     Vlv0 = 97.22 + V0;
+%     Ps0 = 108.2;
+    Vlv0 = 225.6 + V0;
+    Ps0 = 72.95;
     
     % Timing
+%     HR = 90;
+%     num_cycles = 30;
+    
     HR = 90;
     num_cycles = 30;
     
@@ -90,10 +116,10 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     den_Qa = range(cQa);
     rmse_Qa = rmse_Qa*100/den_Qa;
     
-    fprintf('RMSE of PLV = %.3f (%% of mean) \n', rmse_Plv);
-    fprintf('RMSE of Pao = %.3f (%% of mean) \n', rmse_Pao);
-    fprintf('RMSE of dP = %.3f (%% of mean) \n', rmse_dP);
-    fprintf('RMSE of Qa = %.3f (%% of mean) \n', rmse_Qa);
+    fprintf('nRMSE of PLV = %.3f (%% of mean) \n', rmse_Plv);
+    fprintf('nRMSE of Pao = %.3f (%% of mean) \n', rmse_Pao);
+    fprintf('nRMSE of dP = %.3f (%% of mean) \n', rmse_dP);
+    fprintf('nRMSE of Qa = %.3f (%% of mean) \n', rmse_Qa);
     
 %% Figures
     set(0, 'DefaultLineLineWidth',1);
@@ -138,7 +164,7 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     ax = gca;
     apply_axis_properties(ax, linewidth);
     legend('Computational','Two Element');
-    ylabel('\boldmath $Q_{a}$ \bf mL/s');
+    ylabel('\boldmath $Q_{a}$ \bf (mL/s)');
     
     figure; % Comparison of outputs
     decimation = 100;
@@ -152,7 +178,7 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     plot(t,cPlv,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
     plot(t(1:decimation:end),Plv(1:decimation:end),':k');
     hold off;
-    title(['\bf RMSE = \boldmath $',num2str(rmse_Plv,2),'$ \%']);
+    title(['\bf nRMSE = \boldmath $',num2str(rmse_Plv,2),'$ \%']);
     ax1 = gca;
     %ylim([min(ylim) 100]);
     apply_axis_properties(ax1, linewidth);
@@ -164,7 +190,7 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     plot(t,cPao,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
     plot(t(1:decimation:end),Pao(1:decimation:end),':k');
     hold off;
-    title(['\bf RMSE = \boldmath $',num2str(rmse_Pao,2),'$ \%']);
+    title(['\bf nRMSE = \boldmath $',num2str(rmse_Pao,2),'$ \%']);
     ax2 = gca;
     %ylim([min(ylim) 110]);
     apply_axis_properties(ax2, linewidth);
@@ -176,7 +202,7 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     plot(t,dP,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
     plot(t(1:decimation:end),dPhat(1:decimation:end),':k');
     hold off;
-    title(['\bf RMSE = \boldmath $',num2str(rmse_dP,2),'$ \%']);
+    title(['\bf nRMSE = \boldmath $',num2str(rmse_dP,2),'$ \%']);
     ax3 = gca;
     %ylim([min(ylim) 50]);
     apply_axis_properties(ax3, linewidth);
@@ -189,11 +215,11 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
     plot(t,cQa,'-k','LineWidth',2,'Color',[0.7,0.7,0.7]);
     plot(t(1:decimation:end),Qa(1:decimation:end),':k');
     hold off;
-    title(['\bf RMSE = \boldmath $',num2str(rmse_Qa,2),'$ \%']);
+    title(['\bf nRMSE = \boldmath $',num2str(rmse_Qa,2),'$ \%']);
     ax4 = gca;
     %ylim([min(ylim) 250]);
     apply_axis_properties(ax4, linewidth);
-    ylabel('\boldmath $Q_{a}$ \bf mL/s');
+    ylabel('\boldmath $Q_{a}$ \bf (mL/s)');
     xlabel('\bf Time (s)');
     %legend('Computational','Two Element');
     

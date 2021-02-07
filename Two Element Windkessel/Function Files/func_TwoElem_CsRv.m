@@ -41,11 +41,14 @@ est_meas     : Estimated measurements
 %{
 v1 : Suraj R Pawar, 6-22-2020
      - Initialize
-%}
 v2 : Suraj R Pawar, 7-31-2020
     - Fixed description. 
     - Instead of u in the inputs, the description mentioned Qao. Replaced
     with the right description
+%}
+v3 : Suraj R Pawar, 2-2-2021
+    - Modify for the new two element windkessel model (the one where Pr is
+    only connected to LV, and not RSVR as well)
 %}
 
     % Get known / estimated parameters depending on version
@@ -75,7 +78,8 @@ v2 : Suraj R Pawar, 7-31-2020
         Qao = Qa + Qvad;
         
     % State Equations for Ejection        
-        Psdot = (1./Cs).*(Qao - (1./Rsvr)*(Ps - Pr));
+        %Psdot = (1./Cs).*(Qao - (1./Rsvr)*(Ps - Pr)); This was the old model
+        Psdot = (1./Cs).*(Qao - (1./Rsvr)*(Ps)); % v3
         
         xdot = [Psdot; paramdots];                
         sigmas_x_new = sigmas_x + xdot*dt + sigmas_v;        

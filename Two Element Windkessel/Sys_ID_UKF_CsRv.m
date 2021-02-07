@@ -14,8 +14,13 @@ be performed during all stages of the cardiac cycle.
 4. Pr can be approximated from the Plv value during filling stage
 
 -------------------------------- Verisons ---------------------------------
+%{
 v1 : 6-22-2020, Suraj R Pawar
     - Initialize
+%}
+v2 : Suraj R Pawar, 2-2-2021
+    - Test with the new two element windkessel model (Pr not attached to
+    Rsvr)
 %}
 
 close all; clear all; clc;
@@ -23,13 +28,15 @@ include_us;
 
 %% ---------------------- User Inputs -------------------------------------
     % Data file to load
-    datafilename = 'sync_1_1_SysID.mat';
+%     datafilename = 'sync_1_1_SysID.mat';    % Use for animal experiments
+%     datafilename = 'noisy_data_comp_hf.mat';    % Use for healthy sim
+    datafilename = 'noisy_data_comp_healthy.mat';    % Use for HF sim
     
     % Set known values
-    Pr_true = 3.7;                        % (mmHg)
+    Pr_true = 2.7;                        % (mmHg)
     
     % Initial Conditions    
-    Ps0 = 65;                          % Initial systemic pressure (mmHg)            
+    Ps0 = 108.2;                          % Initial systemic pressure (mmHg)            
     Cs0 = 1;                            % Initial guess for systemic compliance (mL/mmHg)    
     Rv0 = 0.001;    
     

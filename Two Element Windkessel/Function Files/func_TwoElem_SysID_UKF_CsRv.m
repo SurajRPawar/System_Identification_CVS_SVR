@@ -47,8 +47,13 @@ theta   : Estimated parameters
 p_aug   : Covariances for the augmented state [x; theta; v; n]
 
 ----------------------------- VERSION -------------------------------------
+%{
 v1 : Suraj R Pawar, 6-11-2020
     - Initialize
+%}
+v2 : Suraj R Pawar, 2-2-2021
+    - Modify for the new two element windkessel model (the one where Pr is
+    only connected to LV, and not RSVR as well)
 %}
     
     %% Argument handling

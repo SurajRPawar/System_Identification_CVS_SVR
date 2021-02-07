@@ -35,9 +35,11 @@ v1 : Suraj R Pawar, 5-24-2020
 v2 : Suraj R Pawar, 6-11-2020
     - Send counts input to func_handle_parameters
     - This function will use counts to determine the number of states
-%}
 v3 : Suraj R Pawar, 6-22-2020
     - Switched to square root law for mitral valve flow
+%}
+v4 : Suraj R Pawar, 2-2-2021
+    - Switch to new two element windkessel model (Pr not attached to Rsvr)
 %}
 
     % Known parameters
@@ -81,7 +83,8 @@ v3 : Suraj R Pawar, 6-22-2020
         
     % State Equations for Filling
         Vbardot = -Qvad + Qm;
-        Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps - Pr) + Qa);
+        %Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps - Pr) + Qa);
+        Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps) + Qa); % v4
         
         xdot = [Vbardot; Psdot; paramdots];                
         sigmas_x_new = sigmas_x + xdot*dt + sigmas_v;

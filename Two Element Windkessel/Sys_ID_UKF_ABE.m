@@ -33,10 +33,12 @@ v2 : Suraj R Pawar, 6-11-2020
     - Tested after adding 'counts' variable to func_handle_parameters
 v3 : Suraj R Pawar, 6-12-2020
     - Added Qafilter structure containing filtered signal and thresholds
-%}
 v4 : Suraj R Pawar, 6-22-2020
     - Experiment with Healthy computational model data
     - Switched to a square root law for the aortic flow
+%}
+v5 : Suraj R Pawar, 2-2-2021
+    - Test with new two element windkessel model (Pr not attached to Rsvr)
 %}
 
 close all; clear all; clc;
@@ -45,12 +47,14 @@ include_us;
 %% ----------------------- User Inputs ------------------------------------
 
     % Data file to load
-    datafilename = 'sync_1_1_SysID.mat';
+%     datafilename = 'sync_1_1_SysID.mat';    % Use for animal experiments
+%     datafilename = 'noisy_data_comp_hf.mat';    % Use for healthy sim
+    datafilename = 'noisy_data_comp_healthy.mat';    % Use for HF sim
     
     % Set values for Cs, Rv and Pr
-    Cs_true = 1.520; % (mL/mmHg)
-    Pr_true = 14;    % (mmHg)
-    Rv = 0.006;      % (mmHg/mL/s)
+    Cs_true = 1.044; % (mL/mmHg)
+    Pr_true = 2.7;    % (mmHg)
+    Rv = 0.008;      % (mmHg/mL/s)
     
     % Set Qa filtering parameters and thresholds
     Qalowpassf = 8;    % Low pass cutoff frequency (Hz)
@@ -59,10 +63,10 @@ include_us;
     
     % Initial Conditions for B, E estimator
     V0_guess_be = 45;                       % Guess for unstressed blood volume
-    Vlv0_be = 45;                         % Initial left ventricle volume (mL)
-    Ps0_be = 65;                           % Initial systemic pressure (mmHg)
-    B0 = 0.1;
-    Emax0 = 10;
+    Vlv0_be = 145;                         % Initial left ventricle volume (mL)
+    Ps0_be = 108.2;                           % Initial systemic pressure (mmHg)
+    B0 = 0.01;
+    Emax0 = 1;
     
     % Initial conditions for A estimator
     V0_guess_a = 45;

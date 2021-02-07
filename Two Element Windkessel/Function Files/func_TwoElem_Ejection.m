@@ -48,9 +48,11 @@ v3 : Suraj R Pawar, 5-28-2020
     equations for estimated parameters based on the experiment being run
 v4 : Suraj R Pawar, 6-11-2020
     - Passing variable 'counts' to func_handle_parameters
-%}
 v5 : Suraj R Pawar, 6-22-2020
     - Switched to square root law for valve resistance
+%}
+v6 : Suraj R Pawar, 2-2-2021
+    - Switch to new two element windkessel model (Pr not attached to Rsvr)
 %}
 
     % Get known / estimated parameters depending on version
@@ -93,7 +95,8 @@ v5 : Suraj R Pawar, 6-22-2020
         
     % State Equations for Ejection
         Vbardot = -Qvad - Qa;
-        Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps - Pr) + Qa);
+        %Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps - Pr) + Qa);
+        Psdot = (1./Cs)*(Qvad - (1./Rsvr)*(Ps) + Qa); %v6
         
         xdot = [Vbardot; Psdot; paramdots];                
         sigmas_x_new = sigmas_x + xdot*dt + sigmas_v;
