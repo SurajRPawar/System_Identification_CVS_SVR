@@ -5,7 +5,7 @@ include_us;
 
 
 %% Load signals generated from computational model
-load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
+load('Results/Resulting Signals/Resulting_Signals_Animal_Sim.mat');
 
 %% Parameters for Two Element Model
     % Parameters
@@ -17,7 +17,8 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
 %     V0 = 0;
 %     Pr = 14;
 %     Rv = 0.01476;
-    
+
+     % Healthy (new model)
 %     A = 0.0252;
 %     B = 0.0492;
 %     Emax = 3.2;
@@ -27,39 +28,57 @@ load('Results/Resulting Signals/Resulting_Signals_HF_Sim.mat');
 %     Pr = 3;
 %     Rv = 0.004786;
     
-    A = 0.501;
-    B = 0.0145;
-    Emax = 0.35;
-    Cs = 0.889;
-    Rsvr = 1.0752;
+%     % HF (new model)
+%     A = 0.501;
+%     B = 0.0145;
+%     Emax = 0.35;
+%     Cs = 0.889;
+%     Rsvr = 1.0752;
+%     V0 = 5;
+%     Pr = 13.8;
+%     Rv = 0.01475;
+    
+    % Animal (new model)
+    A = 0.741;
+    B = 0.0314;
+    Emax = 2.6;
+    Cs = 1.26;
+    Rsvr = 0.7684;
     V0 = 5;
-    Pr = 13.8;
-    Rv = 0.01475;
+    Pr = 18;
+    Rv = 0.005496;
     
     % Initial Conditions
 %     Vlv0 = 259.5 + V0;
 %     Ps0 = 73.67;
     
+%     % Healthy (new model)
 %     Vlv0 = 97.22 + V0;
 %     Ps0 = 108.2;
-    Vlv0 = 225.6 + V0;
-    Ps0 = 72.95;
+% 
+%     % HF (new model)
+%     Vlv0 = 225.6 + V0;
+%     Ps0 = 72.95;
+    
+    % Animal (new model)
+    Vlv0 = 103 + V0;
+    Ps0 = 62;
     
     % Timing
 %     HR = 90;
 %     num_cycles = 30;
     
-    HR = 90;
-    num_cycles = 30;
+    HR = 70.6057;
+    num_cycles = 50;
     
 %% Simulate Two Element Model
 
     tc = 60/HR;
     tf = num_cycles * tc;
-    dt = 0.0001;
+    dt = 0.001;
     t = [0 : dt : tf];
     tvc = (550 - 1.75*HR)/1000;
-    %tvc = 0.6;
+    tvc = 0.6;
     
     x0 = [Vlv0; Ps0];
     parameters = [Cs; Rsvr; Pr; Rv; Rv; A; B; Emax; V0; HR; tc; tvc];
