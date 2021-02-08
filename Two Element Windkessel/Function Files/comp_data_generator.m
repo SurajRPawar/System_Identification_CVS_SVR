@@ -1,4 +1,4 @@
-function signals = comp_data_generator(parameters, num_cycles, vad, heart_condition)
+function [signals, Pr] = comp_data_generator(parameters, num_cycles, vad, heart_condition)
 %% Function file to generate computational model data
 %{
 --------------------------- Description -----------------------------------
@@ -37,16 +37,24 @@ signals : (1) Plv, Left ventricular pressure (mmHg)
           (7) Qvad, VAD flow rate (mL/s)
           (8) Time vector (s)
 
+Pr      : End diastolic left ventricular pressure (mmHg)
+
 ---------------------------- Versions -------------------------------------
 %{
 v1 : Suraj R Pawar, 7-14-2020
     - Initialize
-%}
 v2 : Suraj R Pawar, 7-20-2020
     - Remove process noise based monte carlo simulation
     - Only perform clean Euler Simulation
     - Additive white Gaussian measurement noise will be added later in a
     separate function
+%}
+v3 : Suraj R Pawar, 2-8-2021
+    - Added Pr output to the function. 
+    - Pr is set as end diastolic LV pressure.
+    - In computational model, R-wave trigger signals the end of diastole
+    and beginning of systole. We use this index to find the PLV of the last
+    cycle. This is used as Pr.
 %}
 
 %% Input Parameters
@@ -159,6 +167,7 @@ v2 : Suraj R Pawar, 7-20-2020
     QA = PLV;
     QM = PLV;    
     en = PLV;                    
+    rwt = PLV;
     
     for i = 1:steps
         % State Dynamics propagation
@@ -176,6 +185,7 @@ v2 : Suraj R Pawar, 7-20-2020
         Qvad(i) = y(6);
         PLA(i) = y(7);
         PRA(i) = y(8);
+        rwt(i) = y(9);
     end   
         
     VLV = Xeu(2,:).';    
@@ -190,4 +200,5 @@ v2 : Suraj R Pawar, 7-20-2020
               (7) Qvad, VAD flow rate (mL/s)
     %}
     signals = [PLV, PSA, PLA, PRA, VLV, QA, Qvad, t.'];
+    Pr = PLV(find(rwt,1,'last'));
 end

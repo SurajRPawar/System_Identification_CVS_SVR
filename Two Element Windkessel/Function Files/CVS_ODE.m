@@ -430,6 +430,13 @@ y(5) = e_t_lv;
 y(6) = Qvad;
 y(7) = P_la;
 y(8) = P_ra;
+% Output R-wave trigger
+if tn == 0
+    rwt = 1;
+else
+    rwt = 0;
+end
+y(9) = rwt;
 end
 
 

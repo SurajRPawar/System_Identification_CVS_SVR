@@ -9,9 +9,12 @@ Element Windkessel model with a square root law for valve flows.
 %{
 v1 : Suraj R Pawar, 7-20-2020
     - Initialize
-%}
-v2 : Suraj R Pawar, 7-2-2021
+v2 : Suraj R Pawar, 2-7-2021
     - Animal experiment tests with new two element model
+%}
+v3 : Suraj R Pawar, 2-8-2021
+    - Pr now taken as end diastolic PLV. This is scanned from PLV waveform
+    when computational model generates this signal
 %}
 
 clear all; close all; clc;
@@ -20,7 +23,7 @@ include_us;
 %% ------------------------- User Inputs ----------------------------------
     
     % Experiment
-    num_trials = 11;
+    num_trials = 1;
     num_cycles = 30;
     vad = 1;
     
@@ -113,7 +116,7 @@ include_us;
         parameters = parameters_true(i,:);
         
         % Generate Measurements
-        signals = comp_data_generator(parameters, num_cycles, vad, heart_condition);
+        [signals, Pr_true] = comp_data_generator(parameters, num_cycles, vad, heart_condition);
         
         % Load data from animal experiment
         %{
