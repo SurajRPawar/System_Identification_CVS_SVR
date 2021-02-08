@@ -20,7 +20,7 @@ include_us;
 %% ------------------------- User Inputs ----------------------------------
     
     % Experiment
-    num_trials = 1;
+    num_trials = 11;
     num_cycles = 30;
     vad = 1;
     
@@ -29,39 +29,40 @@ include_us;
     logging = 1;
     
     % Upper and lower Limits for parameters
-    uA = 0.216; 
-    lA = 0.144;
+    uA = 0.0360; 
+    lA = 0.0240;
     
-    uB = 0.0192;
-    lB = 0.0128;
+    uB = 0.06;
+    lB = 0.04;
     
-    uE = 0.36;
-    lE = 0.24;
+    uE = 3.9;
+    lE = 2.6;
     
-    uCs = 0.78;
-    lCs = 0.52;
+    uCs = 1.31;
+    lCs = 1.125;
     
-    uRsvr = 1.1;
-    lRsvr = 1;
+    uRsvr = 1;
+    lRsvr = 0.95;
     
     uRv = 0.003;
     lRv = 0.002;
     
-    uHR = 90;
-    lHR = 90;
+    uHR = 80;
+    lHR = 80;
     
     override_parameters = 0;                                        % If you want to manually set the parameters
-    parameters_set = [0.18, 0.016, 0.3, 0.65, 1.075, 0.0025, 90];   % A, B, E, Cs, Rsvr, Rv, HR
-    heart_condition = 2;                                            % 1 = Healthy, 2 = Heart Failure
+    parameters_set = [0.03, 0.05, 3.25, 1.25, 0.975, 0.0025, 80];   % A, B, E, Cs, Rsvr, Rv, HR
+    %parameters_set = [0.0312    0.0572    3.3819    1.2754    0.9578    0.0025   80.0000];   % A, B, E, Cs, Rsvr, Rv, HR
+    heart_condition = 1;                                            % 1 = Healthy, 2 = Heart Failure
     
     override_tvc = 0;                                               % 0 = Calculate tvc, 1 = Manually set tvc 
     tvc_manual = 0.6; %0.6   
     
     % Initial Guesses
-    initial_guesses.A0 = 0.1;
+    initial_guesses.A0 = 0.01;
     initial_guesses.B0 = 0.01;
-    initial_guesses.Emax0 = 0.1;
-    initial_guesses.Vbar0 = 250;        % 150 for healthy, 250 for heart failure
+    initial_guesses.Emax0 = 1;
+    initial_guesses.Vbar0 = 150;        % 150 for healthy, 250 for heart failure
     
     % Filtering for Qa signal
     Qa_filter.lowpass = 30;
@@ -70,13 +71,13 @@ include_us;
     
     % Known / Approximated parameters
     %Pr_true = 3;    % (mmHg), 3 for healthy, 14 for heart failure
-    Pr_true = 14;    % (mmHg), 3 for healthy, 14 for heart failure
+    Pr_true = 3;    % (mmHg), 3 for healthy, 14 for heart failure
     V0_true = 5;    % (mL)
         
     % Noise statistics   
     pressure_noise_process = 5;  
     flow_noise_process = 1;   % Not used in UKF weightings
-    volume_noise_process = 1; %0.5
+    volume_noise_process = 0.5; %0.5
     
     pressure_noise_meas = 0.8; 
     flow_noise_meas = 0.5;
