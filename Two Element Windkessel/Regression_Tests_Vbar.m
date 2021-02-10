@@ -22,7 +22,7 @@ include_us;
     delta = 10;
     Vbar0_lower = (1 - delta/100)*Vset;
     Vbar0_upper = (1 + delta/100)*Vset;
-    Vbar0_increment = 3;
+    Vbar0_increment = 20;
     
     num_cycles = 30;            % Number of heart cycles
     vad = 1;
@@ -38,9 +38,9 @@ include_us;
     tvc_manual = 0.6;   
     
     % Initial Guesses
-    initial_guesses.A0 = 0.01;
+    initial_guesses.A0 = 0.1;
     initial_guesses.B0 = 0.01;
-    initial_guesses.Emax0 = 1;
+    initial_guesses.Emax0 = 0.1;
     %initial_guesses.Vbar0 = 150;        % 150 for healthy, 250 for heart failure
     
     % Filtering for Qa signal
@@ -52,10 +52,11 @@ include_us;
     Pr_true = 14;    % (mmHg), 3 for healthy, 14 for heart failure
     V0_true = 5;    % (mL)
         
+    
     % Noise statistics   
     pressure_noise_process = 5;  
     flow_noise_process = 1;   % Not used in UKF weightings
-    volume_noise_process = 0.5;
+    volume_noise_process = 1;
     
     pressure_noise_meas = 0.8; 
     flow_noise_meas = 0.5;
@@ -124,16 +125,14 @@ include_us;
     end
     
 %% Data Logging
-    if logging == 1        
         A_est = parameters_est(:,1);        
         B_est = parameters_est(:,2);        
         E_est = parameters_est(:,3);
         Cs_est = parameters_est(:,4);        
         svr_est = parameters_est(:,5);
         Rv_est = parameters_est(:,6);
-                
+    if logging == 1                        
         T = [Vbar0.', A_est, B_est, E_est, Cs_est, svr_est, Rv_est, RMSE.'];
-              
         xlswrite(filename,T);
         fprintf('Data written to file .. \n');
     end
