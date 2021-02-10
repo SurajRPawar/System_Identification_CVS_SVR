@@ -18,11 +18,11 @@ include_us;
 %% ------------------------- User Inputs ----------------------------------
     
     % Experiment
-    Vset = 225;
+    Vset = 145;
     delta = 10;
     Vbar0_lower = (1 - delta/100)*Vset;
     Vbar0_upper = (1 + delta/100)*Vset;
-    Vbar0_increment = 20;
+    Vbar0_increment = 2;
     
     num_cycles = 30;            % Number of heart cycles
     vad = 1;
@@ -31,16 +31,16 @@ include_us;
     filename = 'Results/Regression_Tests.xlsx';
     logging = 1;        
     
-    parameters = [0.18, 0.016, 0.3, 0.65, 1.075, 0.0025, 90];       % A, B, E, Cs, Rsvr, Rv, HR
-    heart_condition = 2;                                            % 1 = Healthy, 2 = Heart Failure
+    parameters = [0.03, 0.05, 3.25, 1.25, 0.975, 0.0025, 80];       % A, B, E, Cs, Rsvr, Rv, HR
+    heart_condition = 1;                                            % 1 = Healthy, 2 = Heart Failure
     
     override_tvc = 0;                                               % 0 = Calculate tvc, 1 = Manually set tvc 
     tvc_manual = 0.6;   
     
     % Initial Guesses
-    initial_guesses.A0 = 0.1;
+    initial_guesses.A0 = 0.01;
     initial_guesses.B0 = 0.01;
-    initial_guesses.Emax0 = 0.1;
+    initial_guesses.Emax0 = 1;
     %initial_guesses.Vbar0 = 150;        % 150 for healthy, 250 for heart failure
     
     % Filtering for Qa signal
@@ -49,14 +49,14 @@ include_us;
     Qa_filter.lower = 0;
     
     % Known / Approximated parameters
-    Pr_true = 14;    % (mmHg), 3 for healthy, 14 for heart failure
+    Pr_true = 3;    % (mmHg), 3 for healthy, 14 for heart failure
     V0_true = 5;    % (mL)
         
     
     % Noise statistics   
     pressure_noise_process = 5;  
     flow_noise_process = 1;   % Not used in UKF weightings
-    volume_noise_process = 1;
+    volume_noise_process = 0.5;
     
     pressure_noise_meas = 0.8; 
     flow_noise_meas = 0.5;
